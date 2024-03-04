@@ -1,8 +1,13 @@
 import "server-only";
 import HomeContainer from "./components/Home";
-import { init } from "@jamsocket/javascript/server";
+import Jamsocket from "@jamsocket/javascript/server";
 
-const spawnBackend = init({
+let STABILITY_API_KEY: string = process.env.STABILITY_API_KEY ?? ''
+let S3_IMAGE_URL = process.env.S3_IMAGE_URL ?? ''
+if( !STABILITY_API_KEY || !S3_IMAGE_URL ){
+  throw new Error("JAMSOCKET environment variable is required");
+}
+const jamsocket = Jamsocket.init({
   account: "ffeliciachang",
   service: "renaissance-earth",
   // NOTE: we want to keep the Jamsocket token secret, so we can only do this in a server component
@@ -10,9 +15,15 @@ const spawnBackend = init({
   token: process.env.JAMSOCKET ?? '',
 });
 
+// const jamsocket = Jamsocket.init({dev: true})
+
 export default async function Page() {
-  const spawnResult = await spawnBackend({
+  const spawnResult = await jamsocket.spawn({
     lock: "stability-demo-lock",
+    env: {
+      STABILITY_API_KEY: STABILITY_API_KEY,
+      S3_IMAGE_URL: S3_IMAGE_URL,
+    }
   });
   return <HomeContainer spawnResult={spawnResult} />;
 }
