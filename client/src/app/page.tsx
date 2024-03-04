@@ -8,7 +8,7 @@ const spawnBackend = init({
   // NOTE: we want to keep the Jamsocket token secret, so we can only do this in a server component
   // We'll leave this blank for now, since we don't need it when developing with the dev CLI
   token: "",
-  apiUrl: "http://localhost:8080",
+  apiUrl: process.env.JAMSOCKET ?? "http://localhost:8080",
 });
 
 export default async function Page() {
