@@ -1,18 +1,17 @@
 from fastapi import FastAPI, WebSocket, UploadFile, File, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
-import mimetypes
 from PIL import Image
 import json
 from typing import List
 import base64
 from io import BytesIO
 import os
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
 STABILITY_API_KEY = os.getenv("STABILITY_API_KEY")
-print(STABILITY_API_KEY)
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -51,7 +50,16 @@ class Tile:
 
 tiles = {}
 
-bosch_image_full = Image.open('./bosch.png')
+def get_image_from_s3():
+    S3_IMAGE_URL = os.getenv("S3_IMAGE_URL")
+    response = requests.get(S3_IMAGE_URL)
+    if response.status_code == 200:
+        image_data = response.content
+        image_file = BytesIO(image_data)
+        return image_file
+
+image_file = get_image_from_s3()
+bosch_image_full = Image.open(image_file)
 (width, height) = (bosch_image_full.width // 6, bosch_image_full.height // 6)
 bosch_image_sm = bosch_image_full.resize((width, height))
 buffer = BytesIO()
@@ -83,8 +91,6 @@ async def websocket_endpoint(websocket: WebSocket, id: str):
                 if 'event' in jsonData:
                     if jsonData['event'] == 'create-tile':
                         await handle_create_tile_event(jsonData, websocket, id)
-                    # if jsonData['event'] == 'new-image':
-                    #     await handle_new_image_event(jsonData, websocket, id)
                     if jsonData['event'] == 'new-user':
                         await handle_new_user_event(jsonData, websocket)
             except:
@@ -97,10 +103,6 @@ async def websocket_endpoint(websocket: WebSocket, id: str):
                 "event": f"disconnect-user {id}",
             }
             await users[key].socket.send_text(json.dumps(disconnectingUserEvent))
-
-# new-image - returns cropped image
-# loading-video - returns video id
-# new-video - returns video
 
 async def handle_create_tile_event(jsonData, websocket, client_id):
     # broadcast tile to other users
@@ -192,7 +194,7 @@ async def get_image_id(image_as_base64, websocket):
     try:
         image_data = base64.b64decode(image_as_base64)
         image_file = BytesIO(image_data)
-        image_file.name = 'image.png'  # It's often a good idea to provide a filename
+        image_file.name = 'image.png'
         new_image_event = {
             "event": "image decoded",
         }
@@ -201,7 +203,7 @@ async def get_image_id(image_as_base64, websocket):
             async with httpx.AsyncClient() as client:
                 url = "https://api.stability.ai/v2alpha/generation/image-to-video"
                 headers = {
-                    'authorization': f"Bearer {STABILITY_API_KEY}",  # Replace 'your-api-key' with your actual API key.
+                    'authorization': f"Bearer {STABILITY_API_KEY}",
                     'accept': 'application/json'
                 }
                 files = {'image': ('image.png', image_file, 'image/png')}
@@ -228,69 +230,6 @@ async def get_image_id(image_as_base64, websocket):
                 "event": "unable to parse image",
         }
         await websocket.send_text(json.dumps(new_image_event))
-
-# new-image - returns cropped image
-# loading-video - returns video id
-# new-video - returns video
-# async def handle_new_image_event(jsonData, websocket, client_id):
-#     # broadcast uploaded image to other users
-#     new_image_event = {
-#         "event": "new-image",
-#         'image': jsonData['image'],
-#         'x': jsonData['x'],
-#         'y': jsonData['y'],
-#     }
-#     for key in users:
-#         if(key != client_id):
-#             await users[key].socket.send_text(json.dumps(new_image_event))
-#     # get image id, send that image id back to the user
-#     # then broadcast the image id to other users
-#     try:
-#         id = await get_image_id(jsonData['image'], websocket)
-#         new_loading_video_event = {
-#             "event": "loading-video",
-#             'id': id,
-#             'x': jsonData['x'],
-#             'y': jsonData['y'],
-#         }
-#         await websocket.send_text(json.dumps(new_loading_video_event))
-#         for key in users:
-#             if(key != client_id):
-#                 await users[key].socket.send_text(json.dumps(new_loading_video_event))
-#     except Exception as e:
-#         print(e)
-#         new_image_event = {
-#             "event": "failed-image",
-#             'id': id,
-#             'x': jsonData['x'],
-#             'y': jsonData['y'],
-#         }
-#         await websocket.send_text(json.dumps(new_image_event))
-#     # get video, send that video id back to the user
-#     # then broadcast the video id to other users
-#     try:
-#         video = await create_video(id)
-#         if 'video' in video:
-#             new_video_event = {
-#                 "event": "new-video",
-#                 'id': id,
-#                 'x': jsonData['x'],
-#                 'y': jsonData['y'],
-#                 'video': video['video']
-#             }
-#             await websocket.send_text(json.dumps(new_video_event))
-#             for key in users:
-#                 if(key != client_id):
-#                     await users[key].socket.send_text(json.dumps(new_video_event))
-#     except Exception as e:
-#         print(e)
-#         new_image_event = {
-#             "event": "failed-video",
-#             'id': id,
-#             'x': jsonData['x'],
-#             'y': jsonData['y'],
-#         }
-#         await websocket.send_text(json.dumps(new_image_event))
 
 async def handle_new_user_event(jsonData, websocket):
     user = User(jsonData['id'], jsonData['color'], websocket)
@@ -324,7 +263,7 @@ async def handle_emit(jsonData):
 async def create_video(id):
     url = "https://api.stability.ai/v2alpha/generation/image-to-video/result/" + id
     headers = {
-        'authorization': f"Bearer {STABILITY_API_KEY}",  # Replace 'your-api-key' with your actual API key.
+        'authorization': f"Bearer {STABILITY_API_KEY}",
         'accept': 'application/json'
     }
     async with httpx.AsyncClient() as client:
