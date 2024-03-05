@@ -74,20 +74,20 @@ print('got image')
 @app.websocket("/ws/{id}")
 async def websocket_endpoint(websocket: WebSocket, id: str):
     await websocket.accept()
+    # send initial
+    try:
+        canvas_image = {
+            "event": "canvas-image",
+            "image": f"data:image/png;base64,{bosch_sm_base64}"
+        }
+        await websocket.send_text(json.dumps(canvas_image))
+    except:
+        create_error_event = {
+            "event": "unable to resize bosch",
+        }
+        await websocket.send_text(json.dumps(create_error_event))
     try:
         while True:
-            # send initial
-            try:
-                canvas_image = {
-                    "event": "canvas-image",
-                    "image": f"data:image/png;base64,{bosch_sm_base64}"
-                }
-                await websocket.send_text(json.dumps(canvas_image))
-            except:
-                create_error_event = {
-                    "event": "unable to resize bosch",
-                }
-                await websocket.send_text(json.dumps(create_error_event))
             print('connected')
             # receive events
             data = await websocket.receive_text()
