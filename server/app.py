@@ -10,6 +10,8 @@ import os
 import requests
 from dotenv import load_dotenv
 
+print('imported')
+
 load_dotenv()
 STABILITY_API_KEY = os.getenv("STABILITY_API_KEY")
 
@@ -26,6 +28,7 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
+print('started app')
 class User:
     def __init__(self, id: str, color: str, socket: WebSocket):
         self.id = id
@@ -66,6 +69,8 @@ buffer = BytesIO()
 bosch_image_sm.save(buffer, format="PNG")
 bosch_sm_base64 = base64.b64encode(buffer.getvalue()).decode()
 
+print('got image')
+
 @app.websocket("/ws/{id}")
 async def websocket_endpoint(websocket: WebSocket, id: str):
     await websocket.accept()
@@ -103,6 +108,8 @@ async def websocket_endpoint(websocket: WebSocket, id: str):
                 "event": f"disconnect-user {id}",
             }
             await users[key].socket.send_text(json.dumps(disconnectingUserEvent))
+
+print('past ws')
 
 async def handle_create_tile_event(jsonData, websocket, client_id):
     # broadcast tile to other users
@@ -283,9 +290,11 @@ async def create_video(id):
             data = response.json()
             return {"video": data['video']}
         else:
-            return {"failed": "failed"}
+            exit(f"failed to create video: {response.status_code}, {response.json()}, {response.text}")
+            # return {"failed": "failed"}
     elif response.status_code == 200:
         data = response.json()
         return {"video": data['video']}
     else:
-        return {"failed": "failed"}
+        exit(f"failed to create video: {response.status_code}, {response.json()}, {response.text}")
+        # return {"failed": "failed"}
