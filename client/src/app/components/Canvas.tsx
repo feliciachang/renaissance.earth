@@ -62,11 +62,13 @@ export default function CanvasComponent(props: CanvasComponentProps) {
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
     if (!context) return
+    console.log('before checking image loaded', tiles)
     if (!imageLoaded) return
+    console.log('image loaded', tiles)
 
     tiles.forEach((tile) => {
       if (!tile.video) {
-        if(tile.id) return
+        if(tile.id || tile.id === null) return
         console.log("New Tile from Client", tile)
         context.fillStyle = "rgba(255, 255, 255, 0.2)";
         context.fillRect(tile.x+1, tile.y+1, 127, 127);

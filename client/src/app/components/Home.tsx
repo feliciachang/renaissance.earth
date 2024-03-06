@@ -78,6 +78,7 @@ function Home(props: HomeProps) {
         }
         if(jsonData.event === "existing-tiles"){
           console.log("existing tiles event ", jsonData.tiles)
+          setTiles(jsonData.tiles)
         }
         if (jsonData.event === "new-user") {
           if (jsonData?.id && jsonData?.color) {

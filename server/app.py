@@ -66,12 +66,39 @@ users = {}
 class Tile:
     def __init__(self, x: int, y: int, id: str = None, image: str = None, video: str = None ):
         self.id = id
-        self.x = x,
+        self.x = x
         self.y = y
         self.image = image
         self.video = video
+    def to_dict(self):
+        tile = {
+            "x": self.x,
+            "y": self.y,
+        }
+        if self.id:
+            tile["id"] = self.id
+        if self.image:
+            tile["image"] = self.image
+        if self.video:
+            tile["video"] = self.video
+        return tile
 
-tiles = {}
+class Tiles:
+    def __init__(self):
+        self.tiles = {}
+    def add_tile(self, x: int, y: int):
+        tile = Tile(x, y)
+        self.tiles[f"{x},{y}"] = tile
+        print(self.tiles)
+    def get_tile(self, x: int, y: int):
+        return self.tiles[f"{x},{y}"]
+    def add_tile_attribute(self, x: int, y: int, attributeType: str, attribute: str):
+        tile = self.get_tile(x, y)
+        if tile:
+            setattr(tile, attributeType, attribute)
+    def get_tile_array(self):
+        return [tile.to_dict() for tile in self.tiles.values()]
+tiles = Tiles()
 
 def get_image_from_s3():
     S3_IMAGE_URL = os.getenv("S3_IMAGE_URL")
@@ -102,7 +129,13 @@ async def websocket_endpoint(websocket: WebSocket, id: str):
             "image": f"data:image/jpeg;base64,{bosch_sm_base64}"
         }
         await websocket.send_text(json.dumps(canvas_image))
-        tiles_as_array = list(tiles.values())
+    except Exception as e:
+        create_error_event = {
+            "event": "unable to resize bosch",
+        }
+        await websocket.send_text(json.dumps(create_error_event))
+    try:
+        tiles_as_array = tiles.get_tile_array()
         print(tiles_as_array)
         existing_tiles = {
             "event": "existing-tiles",
@@ -111,8 +144,7 @@ async def websocket_endpoint(websocket: WebSocket, id: str):
         await websocket.send_text(json.dumps(existing_tiles))
     except Exception as e:
         create_error_event = {
-            "event": "unable to resize bosch",
-            # 'e': e
+            "event": "unable to get tiles",
         }
         await websocket.send_text(json.dumps(create_error_event))
     try:
@@ -151,24 +183,23 @@ async def broadcast_new_tile(jsonData, client_id):
         "x": jsonData['x'],
         "y": jsonData['y'],
     }
-    tile = Tile(jsonData['x'], jsonData['y'])
-    tiles[f"{jsonData['x']},{jsonData['y']}"] = tile
+    tiles.add_tile(jsonData['x'], jsonData['y'])
     for key in users:
         if(key != client_id):
             await users[key].socket.send_text(json.dumps(create_tile_event))
 
 async def send_loading_status(jsonData, id, websocket, client_id):
-        create_tile_event = {
-            "event": "loading-video",
-            "x": jsonData['x'],
-            "y": jsonData['y'],
-            "id": id
-        }
-        tiles[f"{jsonData['x']},{jsonData['y']}"].id = id
-        await websocket.send_text(json.dumps(create_tile_event))
-        for key in users:
-            if(key != client_id):
-                await users[key].socket.send_text(json.dumps(create_tile_event))
+    create_tile_event = {
+        "event": "loading-video",
+        "x": jsonData['x'],
+        "y": jsonData['y'],
+        "id": id
+    }
+    tiles.add_tile_attribute(jsonData['x'], jsonData['y'], "id", id)
+    await websocket.send_text(json.dumps(create_tile_event))
+    for key in users:
+        if(key != client_id):
+            await users[key].socket.send_text(json.dumps(create_tile_event))
 
 
 async def handle_create_video_event(jsonData, websocket, client_id):
@@ -202,6 +233,7 @@ async def handle_create_video_event(jsonData, websocket, client_id):
                 'video': video['video']
             }
             # tiles[f"{jsonData['x']},{jsonData['y']}"].video = video
+            tiles.add_tile_attribute(jsonData['x'], jsonData['y'], "video", video)
             await websocket.send_text(json.dumps(new_video_event))
             for key in users:
                 if(key != client_id):
