@@ -105,8 +105,8 @@ def get_image_from_s3():
         image_file = BytesIO(image_data)
         return image_file
 
-# image_file = get_image_from_s3()
-bosch_image_full = Image.open('./bosch-32mb.jpg')
+image_file = get_image_from_s3()
+bosch_image_full = Image.open(image_file)
 (width, height) = (bosch_image_full.width // 6, bosch_image_full.height // 6)
 bosch_image_sm = bosch_image_full.resize((width, height))
 buffer = BytesIO()
