@@ -9,6 +9,7 @@ from io import BytesIO
 import os
 import requests
 from dotenv import load_dotenv
+import asyncio
 
 print_ = print
 def print(*args, **kwargs):
@@ -75,10 +76,6 @@ class Tile:
             "x": self.x,
             "y": self.y,
         }
-        if self.id:
-            tile["id"] = self.id
-        if self.image:
-            tile["image"] = self.image
         if self.video:
             tile["video"] = self.video
         return tile
@@ -222,30 +219,39 @@ async def handle_create_video_event(jsonData, websocket, client_id):
         }
         await websocket.send_text(json.dumps(new_image_event))
         return
-    try:
-        video = await create_video(id)
-        if 'video' in video:
-            new_video_event = {
-                "event": "new-video",
-                'id': id,
-                'x': jsonData['x'],
-                'y': jsonData['y'],
-                'video': video['video']
-            }
-            # tiles[f"{jsonData['x']},{jsonData['y']}"].video = video
-            tiles.add_tile_attribute(jsonData['x'], jsonData['y'], "video", video)
-            await websocket.send_text(json.dumps(new_video_event))
-            for key in users:
-                if(key != client_id):
-                    await users[key].socket.send_text(json.dumps(new_video_event))
-    except Exception:
-        new_image_event = {
+    # try:
+    video = await create_video(id)
+    if 'code' in video:
+        new_video_event = {
             "event": "failed-video",
+            "code": video['code'],
+            "name": video['name'],
+            "errors": video['errors']
+        }
+        await websocket.send_text(json.dumps(new_video_event))
+        return
+    if 'video' in video:
+        new_video_event = {
+            "event": "new-video",
             'id': id,
             'x': jsonData['x'],
             'y': jsonData['y'],
+            'video': video['video']
         }
-        await websocket.send_text(json.dumps(new_image_event))
+        # tiles[f"{jsonData['x']},{jsonData['y']}"].video = video
+        tiles.add_tile_attribute(jsonData['x'], jsonData['y'], "video", video['video'])
+        await websocket.send_text(json.dumps(new_video_event))
+        for key in users:
+            if(key != client_id):
+                await users[key].socket.send_text(json.dumps(new_video_event))
+    # except Exception:
+    #     new_image_event = {
+    #         "event": "failed-video",
+    #         'id': id,
+    #         'x': jsonData['x'],
+    #         'y': jsonData['y'],
+    #     }
+    #     await websocket.send_text(json.dumps(new_image_event))
 
 def extract_base64_data(data_url: str) -> str:
     if ',' in data_url:
@@ -350,16 +356,35 @@ async def create_video(id):
         print("errors", data['errors'])
 
     if response.status_code == 202:
-        while response.status_code == 202:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(url, headers=headers, timeout=3)
+        try:
+            while response.status_code == 202:
+                print(f"looping through 202s {id}")
+                await asyncio.sleep(10)
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(url, headers=headers)
+        except httpx.TimeoutException:
+            print("Timeout occurred while waiting for video generation")
+            return {"code": 408, "name": "Timeout", "errors": ["Timeout occurred while waiting for video generation"]}
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return {"code": 500, "name": "Internal Server Error", "errors": [str(e)]}
         if response.status_code == 200:
             data = response.json()
             return {"video": data['video']}
         else:
-            return {"failed": "failed"}
+            data = response.json()
+            return {
+                "code": response.status_code,
+                "name": data['name'],
+                "errors": data['errors']
+            }
     elif response.status_code == 200:
         data = response.json()
         return {"video": data['video']}
     else:
-        return {"failed": "failed"}
+        data = response.json()
+        return {
+                "code": response.status_code,
+                "name": data['name'],
+                "errors": data['errors']
+            }

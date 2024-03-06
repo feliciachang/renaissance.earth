@@ -67,6 +67,7 @@ export default function CanvasComponent(props: CanvasComponentProps) {
     console.log('image loaded', tiles)
 
     tiles.forEach((tile) => {
+      // BUG: pas tiles without videos will still be redrawn
       if (!tile.video) {
         if(tile.id || tile.id === null) return
         console.log("New Tile from Client", tile)
