@@ -31,7 +31,6 @@ export type Tile = {
   id?: string;
   x: number;
   y: number;
-  base64Image?: string;
   video?: string;
 };
 function Home(props: HomeProps) {
@@ -67,15 +66,18 @@ function Home(props: HomeProps) {
           id: currUser.id,
           color: currUser.color,
         });
+        console.log("sending new user event", userEvent)
         websocket.send(userEvent);
       };
 
       websocket.onmessage = (event) => {
         const jsonData = JSON.parse(event.data);
-        console.log("event", jsonData.event);
-        console.log("data", jsonData);
+        console.log("event", jsonData);
         if (jsonData.event === "canvas-image") {
           setCanvasImage(jsonData.image);
+        }
+        if(jsonData.event === "existing-tiles"){
+          console.log("existing tiles event ", jsonData.tiles)
         }
         if (jsonData.event === "new-user") {
           if (jsonData?.id && jsonData?.color) {
@@ -87,18 +89,6 @@ function Home(props: HomeProps) {
             newUser.color = jsonData.color;
             setUsers((prevUsers) => [...prevUsers, newUser]);
           }
-        }
-        if (jsonData.event === "new-image") {
-          setTiles((prevTiles) => {
-            const newTiles = prevTiles.map((t) => {
-              if (t.x === jsonData.x && t.y === jsonData.y) {
-                return { ...t, base64Image: jsonData.image };
-              }
-              console.log(t);
-              return t;
-            });
-            return newTiles;
-          });
         }
         if (jsonData.event === "loading-video") {
           setTiles((prevTiles) => {
@@ -112,7 +102,6 @@ function Home(props: HomeProps) {
           });
         }
         if (jsonData.event === "new-video") {
-          console.log(jsonData);
           setTiles((prevTiles) => {
             const newTiles = prevTiles.map((t) => {
               if (t.id === jsonData.id) {
@@ -148,11 +137,13 @@ function Home(props: HomeProps) {
     };
     setTiles((prevTiles) => [...prevTiles, newTile]);
     if (websocketRef.current) {
+
       const message = JSON.stringify({
         event: "create-tile",
         x: position.x,
         y: position.y,
       });
+      console.log("sending create tile message", message)
       websocketRef.current.send(message);
     }
   }

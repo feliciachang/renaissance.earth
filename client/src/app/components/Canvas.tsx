@@ -21,6 +21,7 @@ export default function CanvasComponent(props: CanvasComponentProps) {
     x: 0,
     y: 0,
   });
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
@@ -44,28 +45,48 @@ export default function CanvasComponent(props: CanvasComponentProps) {
     const context = canvas.getContext("2d");
     if (!context) return;
 
-    if (!canvasImage) return;
+    if (!canvasImage) return
     // Load the image
     const image = new Image();
     image.src = canvasImage;
     image.onload = () => {
-      console.log(image.width, image.height);
       // Draw the image on the canvas
       context.drawImage(image, 0, 0, canvas.width, canvas.height);
-      tiles.forEach((tile) => {
-        if (!tile.video) {
-          console.log("doesn't have video", tile);
-          context.fillStyle = "rgba(255, 255, 255, 0.2)";
-          context.fillRect(tile.x, tile.y, 128, 128);
-          context.strokeStyle = "white";
-          context.strokeRect(tile.x, tile.y, 128, 128);
-        }
-      });
+      setImageLoaded(true)
     };
+  }, [canvasImage])
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    if (!context) return
+    if (!imageLoaded) return
+
+    tiles.forEach((tile) => {
+      if (!tile.video) {
+        if(tile.id) return
+        console.log("New Tile from Client", tile)
+        context.fillStyle = "rgba(255, 255, 255, 0.2)";
+        context.fillRect(tile.x+1, tile.y+1, 127, 127);
+        context.strokeStyle = "white";
+        context.strokeRect(tile.x+1, tile.y+1, 126, 126);
+      }
+    });
+  }, [imageLoaded, tiles]);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    if (!context) return
+    if (!imageLoaded) return
 
     const renderVideos = () => {
       tiles.forEach((tile) => {
-        console.log("going through tiles");
+        // console.log("going through tiles");
         if (tile.video) {
           const videoBlob = base64ToBlob(tile.video, "video/mp4");
           const videoObjectUrl = URL.createObjectURL(videoBlob);
@@ -75,12 +96,10 @@ export default function CanvasComponent(props: CanvasComponentProps) {
           videoElement.muted = true;
           videoElement.loop = true;
           videoElement.play();
-          console.log("will draw image");
           const renderFrame = () => {
-            console.log("render frame");
             context.drawImage(videoElement, tile.x, tile.y, 128, 128);
             requestAnimationFrame(renderFrame);
-          };
+          }
 
           renderFrame();
         }
@@ -95,7 +114,7 @@ export default function CanvasComponent(props: CanvasComponentProps) {
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
 
-      console.log(`Cursor Position - X: ${x}, Y: ${y}`);
+      // console.log(`Cursor Position - X: ${x}, Y: ${y}`);
       createTile({ x, y });
     };
 
@@ -106,7 +125,7 @@ export default function CanvasComponent(props: CanvasComponentProps) {
     return () => {
       canvas.removeEventListener("click", handleCanvasClick);
     };
-  }, [canvasImage, createTile, tiles]);
+  }, [createTile, imageLoaded, tiles]);
 
   return (
     <div style={{ overflow: "auto" }}>

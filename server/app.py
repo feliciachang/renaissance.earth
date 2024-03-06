@@ -10,6 +10,10 @@ import os
 import requests
 from dotenv import load_dotenv
 
+print_ = print
+def print(*args, **kwargs):
+    print_(*args, **kwargs, flush=True)
+
 print('imported')
 
 load_dotenv()
@@ -34,22 +38,38 @@ class User:
         self.id = id
         self.color = color
         self.socket = socket
-    def __str__(self):
-        return f"User(id={self.user_id}, color={self.color}, socket={self.socket})"
+
+# class Users:
+#     def __init__(self):
+#         self.users = {}
+#     def add_user(self, user: User):
+#         self.users[user.id] = user
+#     async def remove_user(self, id: str):
+#         if id in self.users:
+#             del self.users[id]
+#             for user in self.users:
+#                 disconnectingUserEvent = {
+#                     "event": f"disconnect-user {id}",
+#                 }
+#                 await user.socket.send_text(json.dumps(disconnectingUserEvent))
+#     def broadcast(self, client_id: str, data: str):
+#         for user in self.users:
+#             if(user.id != client_id):
+#                 user.socket.send_text(data)
+#     def emit(self, data: str):
+#         for user in self.users:
+#             user.socket.send_text(data)
 users = {}
 
 # todo update preview for tiles and update tiles
 # update broadcast logic
 class Tile:
-    def __init__(self, stabilityId: str, x: int, y: int, image: str, socket: WebSocket, video: str, ):
-        self.stabilityId = stabilityId
+    def __init__(self, x: int, y: int, id: str = None, image: str = None, video: str = None ):
+        self.id = id
         self.x = x,
         self.y = y
         self.image = image
-        self.socket = socket
         self.video = video
-    def __str__(self):
-        return f"Image(id={self.stabilityId}, image={self.image}, socket={self.socket})"
 
 tiles = {}
 
@@ -61,12 +81,12 @@ def get_image_from_s3():
         image_file = BytesIO(image_data)
         return image_file
 
-image_file = get_image_from_s3()
-bosch_image_full = Image.open(image_file)
+# image_file = get_image_from_s3()
+bosch_image_full = Image.open('./bosch-32mb.jpg')
 (width, height) = (bosch_image_full.width // 6, bosch_image_full.height // 6)
 bosch_image_sm = bosch_image_full.resize((width, height))
 buffer = BytesIO()
-bosch_image_sm.save(buffer, format="PNG")
+bosch_image_sm.save(buffer, format="jpeg")
 bosch_sm_base64 = base64.b64encode(buffer.getvalue()).decode()
 
 print('got image')
@@ -76,17 +96,27 @@ async def websocket_endpoint(websocket: WebSocket, id: str):
     await websocket.accept()
     # send initial
     try:
+        print('canvas image')
         canvas_image = {
             "event": "canvas-image",
-            "image": f"data:image/png;base64,{bosch_sm_base64}"
+            "image": f"data:image/jpeg;base64,{bosch_sm_base64}"
         }
         await websocket.send_text(json.dumps(canvas_image))
-    except:
+        tiles_as_array = list(tiles.values())
+        print(tiles_as_array)
+        existing_tiles = {
+            "event": "existing-tiles",
+            "tiles": tiles_as_array
+        }
+        await websocket.send_text(json.dumps(existing_tiles))
+    except Exception as e:
         create_error_event = {
             "event": "unable to resize bosch",
+            # 'e': e
         }
         await websocket.send_text(json.dumps(create_error_event))
     try:
+        print('try before while loop')
         while True:
             print('connected')
             # receive events
@@ -95,70 +125,72 @@ async def websocket_endpoint(websocket: WebSocket, id: str):
                 jsonData = json.loads(data)
                 if 'event' in jsonData:
                     if jsonData['event'] == 'create-tile':
-                        await handle_create_tile_event(jsonData, websocket, id)
+                        await broadcast_new_tile(jsonData, id)
+                        await handle_create_video_event(jsonData, websocket, id)
                     if jsonData['event'] == 'new-user':
                         await handle_new_user_event(jsonData, websocket)
             except:
                 print('unable to parse JSON')
     except WebSocketDisconnect:
-        del users[id]
-        # broadcast event to all users
-        for key in users:
-            disconnectingUserEvent = {
-                "event": f"disconnect-user {id}",
-            }
-            await users[key].socket.send_text(json.dumps(disconnectingUserEvent))
+        if id in users:
+            del users[id]
+            # broadcast event to all users
+            for key in users:
+                disconnectingUserEvent = {
+                    "event": f"disconnect-user {id}",
+                }
+                await users[key].socket.send_text(json.dumps(disconnectingUserEvent))
 
 print('past ws')
 
-async def handle_create_tile_event(jsonData, websocket, client_id):
+async def broadcast_new_tile(jsonData, client_id):
+    print(f"create tile function {jsonData['x']}, {jsonData['y']}")
     # broadcast tile to other users
     create_tile_event = {
         "event": "new-tile",
         "x": jsonData['x'],
         "y": jsonData['y'],
     }
+    tile = Tile(jsonData['x'], jsonData['y'])
+    tiles[f"{jsonData['x']},{jsonData['y']}"] = tile
     for key in users:
         if(key != client_id):
             await users[key].socket.send_text(json.dumps(create_tile_event))
 
-    # crop and send new image to all users
-    scaled_x = jsonData['x'] * 6
-    scaled_y = jsonData['y'] * 6
-    crop_box = (scaled_x, scaled_y, scaled_x + 768, scaled_y + 768)
-    cropped_image = bosch_image_full.crop(crop_box)
-    buffer = BytesIO()
-    cropped_image.save(buffer, format="PNG")
-    base64_image = base64.b64encode(buffer.getvalue()).decode()
-    tile_image_event = {
-        "event": "new-image",
-        "x": jsonData['x'],
-        "y": jsonData['y'],
-        "image": f"data:image/png;base64,{base64_image}"
-    }
-    for key in users:
-        await users[key].socket.send_text(json.dumps(tile_image_event))
-    try:
-        id = await get_image_id(f"data:image/png;base64,{base64_image}", websocket)
+async def send_loading_status(jsonData, id, websocket, client_id):
         create_tile_event = {
             "event": "loading-video",
             "x": jsonData['x'],
             "y": jsonData['y'],
             "id": id
         }
+        tiles[f"{jsonData['x']},{jsonData['y']}"].id = id
         await websocket.send_text(json.dumps(create_tile_event))
         for key in users:
             if(key != client_id):
                 await users[key].socket.send_text(json.dumps(create_tile_event))
-    except Exception as e:
-        print(e)
+
+
+async def handle_create_video_event(jsonData, websocket, client_id):
+    # crop and send new image to ALL users
+    scaled_x = jsonData['x'] * 6
+    scaled_y = jsonData['y'] * 6
+    crop_box = (scaled_x, scaled_y, scaled_x + 768, scaled_y + 768)
+    cropped_image = bosch_image_full.crop(crop_box)
+    buffer = BytesIO()
+    cropped_image.save(buffer, format="jpeg")
+    base64_image = base64.b64encode(buffer.getvalue()).decode()
+    try:
+        id = await get_image_id(f"data:image/jpeg;base64,{base64_image}", websocket)
+        await send_loading_status(jsonData, id, websocket, client_id)
+    except Exception:
         new_image_event = {
-            "event": "failed-image",
-            'id': id,
+            "event": "failed-to-get-image-id",
             'x': jsonData['x'],
             'y': jsonData['y'],
         }
         await websocket.send_text(json.dumps(new_image_event))
+        return
     try:
         video = await create_video(id)
         if 'video' in video:
@@ -169,12 +201,12 @@ async def handle_create_tile_event(jsonData, websocket, client_id):
                 'y': jsonData['y'],
                 'video': video['video']
             }
+            # tiles[f"{jsonData['x']},{jsonData['y']}"].video = video
             await websocket.send_text(json.dumps(new_video_event))
             for key in users:
                 if(key != client_id):
                     await users[key].socket.send_text(json.dumps(new_video_event))
-    except Exception as e:
-        print(e)
+    except Exception:
         new_image_event = {
             "event": "failed-video",
             'id': id,
@@ -201,12 +233,13 @@ async def get_image_id(image_as_base64, websocket):
     try:
         image_data = base64.b64decode(image_as_base64)
         image_file = BytesIO(image_data)
-        image_file.name = 'image.png'
+        image_file.name = 'image.jpeg'
         new_image_event = {
             "event": "image decoded",
         }
         await websocket.send_text(json.dumps(new_image_event))
         try:
+            print('calling stability api to send image')
             async with httpx.AsyncClient() as client:
                 url = "https://api.stability.ai/v2alpha/generation/image-to-video"
                 headers = {
@@ -229,12 +262,13 @@ async def get_image_id(image_as_base64, websocket):
             print(e)
             new_image_event = {
                 "event": "could not send image to stability ai",
+                # 'e': e
             }
             await websocket.send_text(json.dumps(new_image_event))
-    except:
-        print('unable to parse image')
+    except Exception as e:
         new_image_event = {
-                "event": "unable to parse image",
+            "event": "unable to parse image",
+            # 'e': e
         }
         await websocket.send_text(json.dumps(new_image_event))
 
@@ -273,6 +307,7 @@ async def create_video(id):
         'authorization': f"Bearer {STABILITY_API_KEY}",
         'accept': 'application/json'
     }
+    print('calling stability api to get video')
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
 
@@ -290,11 +325,9 @@ async def create_video(id):
             data = response.json()
             return {"video": data['video']}
         else:
-            exit(f"failed to create video: {response.status_code}, {response.json()}, {response.text}")
-            # return {"failed": "failed"}
+            return {"failed": "failed"}
     elif response.status_code == 200:
         data = response.json()
         return {"video": data['video']}
     else:
-        exit(f"failed to create video: {response.status_code}, {response.json()}, {response.text}")
-        # return {"failed": "failed"}
+        return {"failed": "failed"}

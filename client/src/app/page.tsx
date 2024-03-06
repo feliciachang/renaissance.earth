@@ -3,8 +3,8 @@ import HomeContainer from "./components/Home";
 import Jamsocket from "@jamsocket/javascript/server";
 
 let STABILITY_API_KEY: string = process.env.STABILITY_API_KEY ?? ''
-let S3_IMAGE_URL = process.env.S3_IMAGE_URL ?? ''
-if( !STABILITY_API_KEY || !S3_IMAGE_URL ){
+let S3_IMAGE_URL_SM = process.env.S3_IMAGE_URL_SM ?? ''
+if( !STABILITY_API_KEY || !S3_IMAGE_URL_SM ){
   throw new Error("JAMSOCKET environment variable is required");
 }
 // const jamsocket = Jamsocket.init({
@@ -22,7 +22,7 @@ export default async function Page() {
     lock: "stability-demo-lock",
     env: {
       STABILITY_API_KEY: STABILITY_API_KEY,
-      S3_IMAGE_URL: S3_IMAGE_URL,
+      S3_IMAGE_URL: S3_IMAGE_URL_SM,
     }
   });
   return <HomeContainer spawnResult={spawnResult} />;

@@ -28,42 +28,24 @@ To decrease client latency, I load up a REALLY large image of Earthly Delights (
 There is still latency introduced by loading up such a large image on the session backend, and there is exciting work to be done with figuring out how to make that faster.
 
 ### Jamsocket Session Backends & Native WebSockets
-renaissance.earth uses session backends to load up a 1.4 GB image of Earthly Delights, and stores changes to the canvas interface in the form of Tiles. These changes are triggered by client actions that are sent to the session backend via native WebSockets. Jamsocket session backends are stateful, so
+renaissance.earth uses session backends to load up a 1.4 GB image of Earthly Delights, and stores changes to the canvas interface in the form of Tiles. These changes are triggered by client actions that are sent to the session backend via native WebSockets. Jamsocket session backends are stateful, so I can sync my client and server state by keeping the latest copy of data on my session backend. This is also how the app provides a multiplayer experience.
 
-renaissance.earth also uses Jamsocket session backends and native WebSockets to send realtime updates across connected clients.
+This was the first project where I built with native WebSockets. I found the setup for native WebSockets to be surprisingly simple. The challenge with native WebSockets is less around functionality and more about the design of the WebSocket logic.
 
+## Running the Project
 
-
-renaissance.earth is an example of realtime image to video generation
-
-renaissance.earth uses three main technologies to build user-enacted image to video generation
-renaissance.earth treats a painting as a canvas for user interactions. This can be really intensive for servers and clients that have to render large image files on the fly.
-
-The biggest challenge to renaissance.earth is the way it uses a painting as a canvas for user interactions.
-
-The web is such an interactive and accessible medium,
-The web as a malleable and interactive medium offers so much potential. This project is an attempt to explore that potential with technology that are quickly establishing new standards for web-based experiences: image and video AI generation, new web protocols like WebSockets, and stateful and shared backends.
-
-
- image to video AI generation, realtime interactivity via WebSockets, multiplayer and statefulness on the server via session backends.
-
-At the same time, the web as an interactive medium
-
-In a past experiment called Read Alibi, I
-
-Viewing physical art on the web has always been a challenge. Nothing can compare to seeing a piece in real life, where you can take in the painting from different perspectives and modes of viewing. The web is often just a portal to search and discover. It is not always conducive to lingering.
-
-Renaissance.earth attempts to bring a special element to painting, make you more aware of space cause its blown up.
-
-python3 -m venv venv
-cd server
-npx jamsocket dev
-
+1. Clone the project
+2. Run the client
+```bash
+cd client
 npm install
 npm run dev
-
-1. write the class for users
-2. write readme
+```
+3. Start a Jamsocket session backend
+```bash
+cd server
+npx jamsocket dev
+```
 
 
 TODO:
