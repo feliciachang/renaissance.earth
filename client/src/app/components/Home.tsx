@@ -4,8 +4,8 @@ import type { SpawnResult } from "@jamsocket/javascript/types";
 import { useState, useEffect, useRef } from "react";
 import { generateRandomString } from "../utils";
 import CanvasComponent from "./Canvas";
-import type { Position } from "./Canvas";
 import Footer from "./Footer";
+import { User, Tile, Position } from "../utils/types";
 
 export default function HomeContainer({
   spawnResult,
@@ -23,16 +23,6 @@ interface HomeProps {
   url: string;
 }
 
-export type User = {
-  id: string;
-  color: string;
-};
-export type Tile = {
-  id?: string;
-  x: number;
-  y: number;
-  video?: string;
-};
 function Home(props: HomeProps) {
   const { url } = props;
   const ready = useReady();
@@ -66,7 +56,7 @@ function Home(props: HomeProps) {
           id: currUser.id,
           color: currUser.color,
         });
-        console.log("sending new user event", userEvent)
+        console.log("sending new user event", userEvent);
         websocket.send(userEvent);
       };
 
@@ -76,9 +66,9 @@ function Home(props: HomeProps) {
         if (jsonData.event === "canvas-image") {
           setCanvasImage(jsonData.image);
         }
-        if(jsonData.event === "existing-tiles"){
-          console.log("existing tiles event ", jsonData.tiles)
-          setTiles(jsonData.tiles)
+        if (jsonData.event === "existing-tiles") {
+          console.log("existing tiles event ", jsonData.tiles);
+          setTiles(jsonData.tiles);
         }
         if (jsonData.event === "new-user") {
           if (jsonData?.id && jsonData?.color) {
@@ -138,13 +128,12 @@ function Home(props: HomeProps) {
     };
     setTiles((prevTiles) => [...prevTiles, newTile]);
     if (websocketRef.current) {
-
       const message = JSON.stringify({
         event: "create-tile",
         x: position.x,
         y: position.y,
       });
-      console.log("sending create tile message", message)
+      console.log("sending create tile message", message);
       websocketRef.current.send(message);
     }
   }
@@ -162,11 +151,15 @@ function Home(props: HomeProps) {
           className="relative flex justify-center items-center"
         >
           <div className="absolute">renaissance.earth</div>
-            <div className="absolute w-96 h-96 border border-white/30 rounded-full"></div>
-            <div className="absolute z-10 w-96 h-96 border-2 border-white/50 rounded-full spin-x-animation"></div>
+          <div className="absolute w-96 h-96 border border-white/30 rounded-full"></div>
+          <div className="absolute z-10 w-96 h-96 border-2 border-white/50 rounded-full spin-x-animation"></div>
         </div>
       )}
-      <Footer loading={canvasImage.length === 0} currUser={currUser} users={users}/>
+      <Footer
+        loading={canvasImage.length === 0}
+        currUser={currUser}
+        users={users}
+      />
     </div>
   );
 }

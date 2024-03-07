@@ -1,12 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import Cursor from "./Cursor";
-import type { Tile } from "./Home";
+import type { Tile, Position } from "../utils/types";
 import { base64ToBlob } from "../utils";
-
-export type Position = {
-  x: number;
-  y: number;
-};
 
 interface CanvasComponentProps {
   createTile: (position: Position) => void;
@@ -45,36 +40,36 @@ export default function CanvasComponent(props: CanvasComponentProps) {
     const context = canvas.getContext("2d");
     if (!context) return;
 
-    if (!canvasImage) return
+    if (!canvasImage) return;
     // Load the image
     const image = new Image();
     image.src = canvasImage;
     image.onload = () => {
       // Draw the image on the canvas
       context.drawImage(image, 0, 0, canvas.width, canvas.height);
-      setImageLoaded(true)
+      setImageLoaded(true);
     };
-  }, [canvasImage])
+  }, [canvasImage]);
 
   useEffect(() => {
     if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
-    if (!context) return
-    console.log('before checking image loaded', tiles)
-    if (!imageLoaded) return
-    console.log('image loaded', tiles)
+    if (!context) return;
+    console.log("before checking image loaded", tiles);
+    if (!imageLoaded) return;
+    console.log("image loaded", tiles);
 
     tiles.forEach((tile) => {
       // BUG: pas tiles without videos will still be redrawn
       if (!tile.video) {
-        if(tile.id || tile.id === null) return
-        console.log("New Tile from Client", tile)
+        if (tile.id || tile.id === null) return;
+        console.log("New Tile from Client", tile);
         context.fillStyle = "rgba(255, 255, 255, 0.2)";
-        context.fillRect(tile.x+1, tile.y+1, 127, 127);
+        context.fillRect(tile.x + 1, tile.y + 1, 127, 127);
         context.strokeStyle = "white";
-        context.strokeRect(tile.x+1, tile.y+1, 126, 126);
+        context.strokeRect(tile.x + 1, tile.y + 1, 126, 126);
       }
     });
   }, [imageLoaded, tiles]);
@@ -84,8 +79,8 @@ export default function CanvasComponent(props: CanvasComponentProps) {
 
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
-    if (!context) return
-    if (!imageLoaded) return
+    if (!context) return;
+    if (!imageLoaded) return;
 
     const renderVideos = () => {
       tiles.forEach((tile) => {
@@ -102,7 +97,7 @@ export default function CanvasComponent(props: CanvasComponentProps) {
           const renderFrame = () => {
             context.drawImage(videoElement, tile.x, tile.y, 128, 128);
             requestAnimationFrame(renderFrame);
-          }
+          };
 
           renderFrame();
         }
