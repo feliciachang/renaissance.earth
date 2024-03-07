@@ -7,7 +7,9 @@ export type Tile = {
   id?: string;
   x: number;
   y: number;
+  loadingSquare?: boolean;
   video?: string;
+  videoElement?: HTMLVideoElement;
 };
 
 export type Position = {

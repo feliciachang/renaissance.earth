@@ -6,6 +6,7 @@ import { generateRandomString } from "../utils";
 import CanvasComponent from "./Canvas";
 import Footer from "./Footer";
 import { User, Tile, Position } from "../utils/types";
+import { base64ToBlob } from "../utils";
 
 export default function HomeContainer({
   spawnResult,
@@ -21,6 +22,17 @@ export default function HomeContainer({
 
 interface HomeProps {
   url: string;
+}
+
+function createVideoElement(video: string): HTMLVideoElement {
+  const videoBlob = base64ToBlob(video, "video/mp4");
+  const videoObjectUrl = URL.createObjectURL(videoBlob);
+  const videoElement = document.createElement("video");
+  videoElement.src = videoObjectUrl;
+  videoElement.muted = true;
+  videoElement.loop = true;
+  videoElement.play();
+  return videoElement
 }
 
 function Home(props: HomeProps) {
@@ -68,7 +80,11 @@ function Home(props: HomeProps) {
         }
         if (jsonData.event === "existing-tiles") {
           console.log("existing tiles event ", jsonData.tiles);
-          setTiles(jsonData.tiles);
+          setTiles(jsonData.tiles.map((t: Tile) => {
+            if (!t.video) return t;
+            const videoElement = createVideoElement(t.video);
+            return {...t, videoElement }
+          }));
         }
         if (jsonData.event === "new-user") {
           if (jsonData?.id && jsonData?.color) {
@@ -96,7 +112,8 @@ function Home(props: HomeProps) {
           setTiles((prevTiles) => {
             const newTiles = prevTiles.map((t) => {
               if (t.id === jsonData.id) {
-                return { ...t, video: jsonData.video };
+                const videoElement = createVideoElement(jsonData.video);
+                return { ...t, video: jsonData.video, videoElement };
               }
               return t;
             });
