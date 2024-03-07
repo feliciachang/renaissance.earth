@@ -152,14 +152,15 @@ async def websocket_endpoint(websocket: WebSocket, id: str):
             data = await websocket.receive_text()
             try:
                 jsonData = json.loads(data)
-                if 'event' in jsonData:
-                    if jsonData['event'] == 'create-tile':
-                        await broadcast_new_tile(jsonData, id)
-                        await handle_create_video_event(jsonData, websocket, id)
-                    if jsonData['event'] == 'new-user':
-                        await handle_new_user_event(jsonData, websocket)
             except:
-                print('unable to parse JSON')
+                print(f'unable to parse JSON - {data}')
+                continue
+
+            if 'event' in jsonData:
+                if jsonData['event'] == 'create-tile':
+                    asyncio.create_task(handle_create_tile(jsonData, websocket, id))
+                if jsonData['event'] == 'new-user':
+                    asyncio.create_task(handle_new_user_event(jsonData, websocket))
     except WebSocketDisconnect:
         if id in users:
             del users[id]
@@ -171,6 +172,10 @@ async def websocket_endpoint(websocket: WebSocket, id: str):
                 await users[key].socket.send_text(json.dumps(disconnectingUserEvent))
 
 print('past ws')
+
+async def handle_create_tile(jsonData, websocket, id):
+    await broadcast_new_tile(jsonData, id)
+    await handle_create_video_event(jsonData, websocket, id)
 
 async def broadcast_new_tile(jsonData, client_id):
     print(f"create tile function {jsonData['x']}, {jsonData['y']}")
@@ -210,6 +215,7 @@ async def handle_create_video_event(jsonData, websocket, client_id):
     base64_image = base64.b64encode(buffer.getvalue()).decode()
     try:
         id = await get_image_id(f"data:image/jpeg;base64,{base64_image}", websocket)
+        print(f"got image id: {id} (jsonData: {jsonData} | client_id: {client_id})")
         await send_loading_status(jsonData, id, websocket, client_id)
     except Exception:
         new_image_event = {
@@ -285,13 +291,15 @@ async def get_image_id(image_as_base64, websocket):
                     'accept': 'application/json'
                 }
                 files = {'image': ('image.png', image_file, 'image/png')}
-                response = await client.post(url, files=files, headers=headers)
+                response = await client.post(url, files=files, headers=headers, data={"cfg_scale": 1.8})
                 print(response)
                 if response.status_code == 200:
                     res = response.json()
+                    print(f"200 response from stability ai: {res}")
                     id = res['id']
                     return id
                 else:
+                    print(f"non-200 from stability ai: {response.status_code} {response.text}")
                     new_image_event = {
                         "event": "not 200",
                     }
