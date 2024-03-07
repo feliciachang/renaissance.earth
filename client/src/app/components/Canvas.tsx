@@ -1,7 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import Cursor from "./Cursor";
 import type { Tile, Position } from "../utils/types";
-import { base64ToBlob } from "../utils";
 
 interface CanvasComponentProps {
   createTile: (position: Position) => void;
@@ -64,12 +63,13 @@ export default function CanvasComponent(props: CanvasComponentProps) {
     tiles.forEach((tile) => {
       // BUG: pas tiles without videos will still be redrawn
       if (!tile.video) {
-        if (tile.id || tile.id === null) return;
+        if (tile.id || tile.id === null || tile.loadingSquare) return;
         console.log("New Tile from Client", tile);
         context.fillStyle = "rgba(255, 255, 255, 0.2)";
         context.fillRect(tile.x + 1, tile.y + 1, 127, 127);
         context.strokeStyle = "white";
         context.strokeRect(tile.x + 1, tile.y + 1, 126, 126);
+        tile.loadingSquare = true;
       }
     });
   }, [imageLoaded, tiles]);
@@ -82,28 +82,16 @@ export default function CanvasComponent(props: CanvasComponentProps) {
     if (!context) return;
     if (!imageLoaded) return;
 
-    const renderVideos = () => {
-      tiles.forEach((tile) => {
-        // console.log("going through tiles");
-        if (tile.video) {
-          const videoBlob = base64ToBlob(tile.video, "video/mp4");
-          const videoObjectUrl = URL.createObjectURL(videoBlob);
-
-          const videoElement = document.createElement("video");
-          videoElement.src = videoObjectUrl;
-          videoElement.muted = true;
-          videoElement.loop = true;
-          videoElement.play();
-          const renderFrame = () => {
-            context.drawImage(videoElement, tile.x, tile.y, 128, 128);
-            requestAnimationFrame(renderFrame);
-          };
-
-          renderFrame();
-        }
-      });
+    let isCancelled = false
+    let loopId = Math.random() * 1000 | 0
+    const renderFrame = () => {
+      console.log('rendering frame', loopId)
+      for (const tile of tiles) {
+        if (tile.videoElement) context.drawImage(tile.videoElement, tile.x, tile.y, 128, 128);
+      }
+      if (!isCancelled) requestAnimationFrame(renderFrame);
     };
-    renderVideos();
+    renderFrame();
 
     // Function to handle canvas click events
     const handleCanvasClick = (event: MouseEvent) => {
@@ -122,6 +110,7 @@ export default function CanvasComponent(props: CanvasComponentProps) {
     // Clean up
     return () => {
       canvas.removeEventListener("click", handleCanvasClick);
+      isCancelled = true
     };
   }, [createTile, imageLoaded, tiles]);
 
