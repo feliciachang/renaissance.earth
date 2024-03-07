@@ -2,8 +2,6 @@
 
 Close looking on the web.
 
-add video
-
 ## Motivation
 
 Digital representations of physical art are typically meant for archival or search purposes. These representations are best used for skimming or referencing physical art pieces. It's like running in a museum after hours – thrilling but short-lived.
@@ -16,18 +14,16 @@ In this experience, renaissance.earth focuses on bringing to life (literally) th
 
 ## Behind the Scenes
 
-What made renaissance.earth exciting for me was the they remind me of Harry Potter's moving portraits, as if bringing to life something that was not made to animate. I think makes image-to-video feel like peeking behind a magic curtain, even if the quality is as yet, nascent.
-
 There are a few core technologies that are needed to make this magic work.
 
-### Stability AI Image to Video Model
+### [Stability AI](https://platform.stability.ai/docs/api-reference#tag/v2alphageneration/paths/~1v2alpha~1generation~1image-to-video/post) Image to Video Model
 Image-to-video is available as an API via Stability AI. But the API has strict limitations on the acceptable image sizes. This posed an interesting technical challenge: I wanted to crop specific characters in Earthly Delights, but the acceptable image sizes were all too large for cropping small images.
 
 To decrease client latency, I load up a REALLY large image of Earthly Delights (30,000px x 17,078px) in my session backend. I send a scaled down image to the client, so that I can crop small portions of the image (128px x 128px) and scale it back up to (768px x 768px) before sending the image to Stability AI.
 
 There is still latency introduced by loading up such a large image on the session backend, and there is exciting work to be done with figuring out how to make that faster.
 
-### Jamsocket Session Backends & Native WebSockets
+### [Jamsocket](https://docs.jamsocket.com/) Session Backends & Native WebSockets
 renaissance.earth uses session backends to load up a 1.4 GB image of Earthly Delights, and stores changes to the canvas interface in the form of Tiles. These changes are triggered by client actions that are sent to the session backend via native WebSockets. Jamsocket session backends are stateful, so I can sync my client and server state by keeping the latest copy of data on my session backend. This is also how the app provides a multiplayer experience.
 
 This was the first project where I built with native WebSockets. I found the setup for native WebSockets to be surprisingly simple. The challenge with native WebSockets is less around functionality and more about the design of the WebSocket logic.
@@ -41,18 +37,11 @@ cd client
 npm install
 npm run dev
 ```
-3. Start a Jamsocket session backend
+3. Start a [Jamsocket](https://docs.jamsocket.com/) session backend
 ```bash
 cd server
 npx jamsocket dev
 ```
 
-
-TODO:
-// move canvas image send out of the loop
-// you don't even need any of the python setup locally - > all you need is what's dockerized
--- adding a new library to a python project -> writing it in the requirements.txt file instead of pip install pip freeze etc
-
-
-technical bugs
-- if video is already made, send those videos to users
+## Acknowledgements
+Thank you to Taylor Baldwin and Paul Butler for supporting the project, pushing the idea along, and contributing amazing technical input.
