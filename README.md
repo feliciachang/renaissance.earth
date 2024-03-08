@@ -44,4 +44,4 @@ npx jamsocket dev
 ```
 
 ## Acknowledgements
-Thank you to Taylor Baldwin and Paul Butler for supporting the project, pushing the idea along, and contributing amazing technical input. Thanks also to Sarim Abbas for witnessing the project from start to finish!
+Thank you to Taylor Baldwin and Paul Butler for supporting the project, pushing the idea along, and contributing amazing technical input. Thanks also to Sarim Abbas for many WebSocket conversations along the way.
