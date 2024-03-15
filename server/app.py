@@ -15,8 +15,6 @@ print_ = print
 def print(*args, **kwargs):
     print_(*args, **kwargs, flush=True)
 
-print('imported')
-
 load_dotenv()
 STABILITY_API_KEY = os.getenv("STABILITY_API_KEY")
 
@@ -24,7 +22,6 @@ Image.MAX_IMAGE_PIXELS = None
 
 # an array of media that gets updated and sent to the client via websockets
 app = FastAPI(redirect_slashes=False)
-print('test')
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allows access from the React app origin
@@ -33,36 +30,13 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-print('started app')
 class User:
     def __init__(self, id: str, color: str, socket: WebSocket):
         self.id = id
         self.color = color
         self.socket = socket
-
-# class Users:
-#     def __init__(self):
-#         self.users = {}
-#     def add_user(self, user: User):
-#         self.users[user.id] = user
-#     async def remove_user(self, id: str):
-#         if id in self.users:
-#             del self.users[id]
-#             for user in self.users:
-#                 disconnectingUserEvent = {
-#                     "event": f"disconnect-user {id}",
-#                 }
-#                 await user.socket.send_text(json.dumps(disconnectingUserEvent))
-#     def broadcast(self, client_id: str, data: str):
-#         for user in self.users:
-#             if(user.id != client_id):
-#                 user.socket.send_text(data)
-#     def emit(self, data: str):
-#         for user in self.users:
-#             user.socket.send_text(data)
 users = {}
 
-# todo update preview for tiles and update tiles
 # update broadcast logic
 class Tile:
     def __init__(self, x: int, y: int, id: str = None, image: str = None, video: str = None ):
@@ -225,7 +199,6 @@ async def handle_create_video_event(jsonData, websocket, client_id):
         }
         await websocket.send_text(json.dumps(new_image_event))
         return
-    # try:
     video = await create_video(id)
     if 'code' in video:
         new_video_event = {
@@ -244,20 +217,11 @@ async def handle_create_video_event(jsonData, websocket, client_id):
             'y': jsonData['y'],
             'video': video['video']
         }
-        # tiles[f"{jsonData['x']},{jsonData['y']}"].video = video
         tiles.add_tile_attribute(jsonData['x'], jsonData['y'], "video", video['video'])
         await websocket.send_text(json.dumps(new_video_event))
         for key in users:
             if(key != client_id):
                 await users[key].socket.send_text(json.dumps(new_video_event))
-    # except Exception:
-    #     new_image_event = {
-    #         "event": "failed-video",
-    #         'id': id,
-    #         'x': jsonData['x'],
-    #         'y': jsonData['y'],
-    #     }
-    #     await websocket.send_text(json.dumps(new_image_event))
 
 def extract_base64_data(data_url: str) -> str:
     if ',' in data_url:
@@ -308,13 +272,11 @@ async def get_image_id(image_as_base64, websocket):
             print(e)
             new_image_event = {
                 "event": "could not send image to stability ai",
-                # 'e': e
             }
             await websocket.send_text(json.dumps(new_image_event))
     except Exception as e:
         new_image_event = {
             "event": "unable to parse image",
-            # 'e': e
         }
         await websocket.send_text(json.dumps(new_image_event))
 
