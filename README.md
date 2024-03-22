@@ -1,16 +1,15 @@
-# renaissance.earth
+# [renaissance.earth](https://www.renaissance.earth/)
 
-Close looking on the web.
+
 
 ## Motivation
 
-Digital representations of physical art are typically meant for archival or search purposes. These representations are best used for skimming or referencing physical art pieces. It's like running in a museum after hours – thrilling but short-lived.
+There are many ways to appreciate art. Most digital representations of art are best used for skimming. It's like running in a museum after hours – thrilling but short-lived.
 
-Spaces for close looking or lingering, both on the web and in physical spaces is becoming more and more limited. Our patience is notably shorter. Our capacity to be immersed or surprised is smaller. This only makes such building spaces all the more exciting.
+Renaissance.earth is an experiment in close looking on the web, utilizing native interactions on the web (the click) to encourage lingering. If you stay for long enough, you might encounter a surprise.
 
-renaissance.earth is the latest in a [small personal lineage](https://readalibi.org/invitation) of experiments around this question: what can the web offer when it comes to bringing the artifacts of our physical lives to the virtual realm.
-
-In this experience, renaissance.earth focuses on bringing to life (literally) the provacative yet intriguing characters that shape the Garden of Earthly Delights by Heironymous Bosch.
+## On right now
+Renaissance.earth is currently featuring the Garden of Earthly Delights by Heironymous Bosch.
 
 ## Behind the Scenes
 
@@ -44,4 +43,4 @@ npx jamsocket dev
 ```
 
 ## Acknowledgements
-Thank you to Taylor Baldwin and Paul Butler for supporting the project, pushing the idea along, and contributing amazing technical input. Thanks also to Sarim Abbas for many WebSocket conversations along the way.
+Thank you to Taylor Baldwin and Paul Butler for supporting the project, pushing the idea along, and contributing amazing technical input. Thanks also to Sarim Abbas and Thomas Ballinger for many WebSocket conversations along the way.

@@ -11,13 +11,13 @@ if (!STABILITY_API_KEY || !S3_IMAGE_URL) {
 }
 
 // In Production, initialize Jamsocket with your account, service, and API token
-const jamsocket = Jamsocket.init({
-  account: "ffeliciachang",
-  service: "renaissance-earth",
-  token: process.env.JAMSOCKET ?? "",
-});
+// const jamsocket = Jamsocket.init({
+//   account: "ffeliciachang",
+//   service: "renaissance-earth",
+//   token: process.env.JAMSOCKET ?? "",
+// });
 // In Development, initialize Jamsocket with the dev flag
-// const jamsocket = Jamsocket.init({dev: true})
+const jamsocket = Jamsocket.init({dev: true})
 
 export default async function Page() {
   // Spawn a Jamsocket session backend

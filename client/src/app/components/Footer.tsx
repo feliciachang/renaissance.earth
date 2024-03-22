@@ -1,4 +1,5 @@
-import type { User } from "../utils/types";
+import type { User, } from "../utils/types";
+import { useState } from "react";
 
 interface FooterProps {
   currUser: User;
@@ -8,10 +9,13 @@ interface FooterProps {
 export default function Footer(props: FooterProps) {
   const { currUser, users, loading } = props;
   return (
-    <div className="space-x-2 overflow-x-scroll flex justify-between bg-black w-full h-44 items-center px-6 text-neutral-200">
-      <span className="text-nowrap">
+    <div className= "h-44 bg-black w-full py-4 pl-6 pr-2 text-neutral-200 space-x-2 flex justify-between items-start">
+      <div>
+      <div className="text-nowrap">
         {loading ? "" : "The Garden of Earthly Delights by Heironymous Bosch."}
-      </span>
+      </div>
+      <a href="https://github.com/feliciachang/renaissance.earth" className="text-xs text-neutral-300">Learn more about this project</a>
+      </div>
       <div className="flex space-x-2 items center">
         <div
           className="rounded-full w-6 h-6"
@@ -25,6 +29,6 @@ export default function Footer(props: FooterProps) {
           />
         ))}
       </div>
-    </div>
+      </div>
   );
 }

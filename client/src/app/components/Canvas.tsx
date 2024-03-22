@@ -16,6 +16,7 @@ export default function CanvasComponent(props: CanvasComponentProps) {
     y: 0,
   });
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
@@ -115,14 +116,15 @@ export default function CanvasComponent(props: CanvasComponentProps) {
   }, [createTile, imageLoaded, tiles]);
 
   return (
-    <div style={{ overflow: "auto" }}>
+    <div className="overflow-auto no-scrollbar">
       <canvas
+        onMouseEnter={() => setIsActive(true)} onMouseLeave={() => setIsActive(false)}
         className="cursor-crosshair"
         ref={canvasRef}
         width={5000}
         height={2846}
       />
-      <Cursor position={cursorPosition} />
+      {isActive && <Cursor position={cursorPosition}/>}
     </div>
   );
 }
