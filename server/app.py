@@ -11,12 +11,6 @@ import requests
 from dotenv import load_dotenv
 import asyncio
 
-#TODO: clean up try catches
-#Add screenshot of app in readme
-
-# Todo for email
-# add browsertech digest and tie it to jamsocket
-
 print_ = print
 def print(*args, **kwargs):
     print_(*args, **kwargs, flush=True)
