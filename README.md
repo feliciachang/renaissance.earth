@@ -65,4 +65,4 @@ npx jamsocket dev
 This project is open source and open to contributions! If you encounter any bugs, please make an issue.
 
 ### Acknowledgements
-Thank you to Taylor Baldwin and Paul Butler for supporting the project, pushing the idea along, and contributing amazing technical input. Thanks also to Sarim Abbas and Thomas Ballinger for many WebSocket conversations.
+Thank you to Taylor Baldwin and Paul Butler for supporting the project, pushing the idea along, and contributing amazing technical input. Thanks also to Sarim Abbas and Thomas Ballinger for many WebSocket conversations. And thanks to Hristo Staykov for many coworking sessions. 
