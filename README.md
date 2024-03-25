@@ -36,7 +36,7 @@ renaissance.earth uses session backends to load up a large copy of Earthly Delig
 cd client
 npm install
 ```
-3. Initialize a session backend connection with the dev flag in app/page.tsx
+3. Initialize a session backend connection with the dev flag in `app/page.tsx`
 (And comment out the production version)
 ```tsx
 // In Production, initialize Jamsocket with your account, service, and API token
@@ -48,7 +48,7 @@ npm install
 // In Development, initialize Jamsocket with the dev flag
 const jamsocket = Jamsocket.init({dev: true})
 ```
-4. Create an .env.local file in the client's root folder.
+4. Create an `.env.local` file in the client's root folder.
 - Add your StabilityAI API key
 - Add an accessible URL to an image of The Garden of Earthly Delights. I use the original file from [Wikimedia](https://commons.wikimedia.org/wiki/File:The_Garden_of_Earthly_Delights_by_Bosch_High_Resolution.jpg.
 5. Run the client
