@@ -1,8 +1,7 @@
 # [renaissance.earth](https://www.renaissance.earth/)
 
 
-
-https://github.com/feliciachang/renaissance.earth/assets/34881756/fa70e6c4-281f-4e6f-bb6b-2156f5162f8e
+https://github.com/feliciachang/renaissance.earth/assets/34881756/7a9eb90b-d921-4421-81d9-135284db91b4
 
 
 
