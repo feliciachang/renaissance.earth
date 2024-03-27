@@ -1,6 +1,7 @@
 import "server-only";
 import HomeContainer from "./components/Home";
 import Jamsocket from "@jamsocket/javascript/server";
+import { JamsocketInstance } from "@jamsocket/javascript/server";
 
 let STABILITY_API_KEY: string = process.env.STABILITY_API_KEY ?? "";
 let S3_IMAGE_URL = process.env.S3_IMAGE_URL_SM ?? "";
@@ -10,14 +11,16 @@ if (!STABILITY_API_KEY || !S3_IMAGE_URL) {
   );
 }
 
-// In Production, initialize Jamsocket with your account, service, and API token
-const jamsocket = Jamsocket.init({
-  account: "ffeliciachang",
-  service: "renaissance-earth",
-  token: process.env.JAMSOCKET ?? "",
-});
-// In Development, initialize Jamsocket with the dev flag
-// const jamsocket = Jamsocket.init({dev: true})
+let jamsocket: JamsocketInstance
+if(process.env.NODE_ENV === "production") {
+  jamsocket = Jamsocket.init({
+    account: "ffeliciachang",
+    service: "renaissance-earth",
+    token: process.env.JAMSOCKET ?? "",
+  });
+} else {
+  jamsocket = Jamsocket.init({dev: true})
+}
 
 export default async function Page() {
   // Spawn a Jamsocket session backend
