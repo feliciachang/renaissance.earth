@@ -92,44 +92,24 @@ print('got image')
 @app.websocket("/ws/{id}")
 async def websocket_endpoint(websocket: WebSocket, id: str):
     await websocket.accept()
-    # send initial
+    # send initial data when a client first connects
+    canvas_image = {
+        "event": "canvas-image",
+        "image": f"data:image/jpeg;base64,{bosch_sm_base64}"
+    }
+    await websocket.send_text(json.dumps(canvas_image))
+    tiles_as_array = tiles.get_tile_array()
+    print(tiles_as_array)
+    existing_tiles = {
+        "event": "existing-tiles",
+        "tiles": tiles_as_array
+    }
+    await websocket.send_text(json.dumps(existing_tiles))
     try:
-        print('canvas image')
-        canvas_image = {
-            "event": "canvas-image",
-            "image": f"data:image/jpeg;base64,{bosch_sm_base64}"
-        }
-        await websocket.send_text(json.dumps(canvas_image))
-    except Exception as e:
-        create_error_event = {
-            "event": "unable to resize bosch",
-        }
-        await websocket.send_text(json.dumps(create_error_event))
-    try:
-        tiles_as_array = tiles.get_tile_array()
-        print(tiles_as_array)
-        existing_tiles = {
-            "event": "existing-tiles",
-            "tiles": tiles_as_array
-        }
-        await websocket.send_text(json.dumps(existing_tiles))
-    except Exception as e:
-        create_error_event = {
-            "event": "unable to get tiles",
-        }
-        await websocket.send_text(json.dumps(create_error_event))
-    try:
-        print('try before while loop')
         while True:
-            print('connected')
             # receive events
             data = await websocket.receive_text()
-            try:
-                jsonData = json.loads(data)
-            except:
-                print(f'unable to parse JSON - {data}')
-                continue
-
+            jsonData = json.loads(data)
             if 'event' in jsonData:
                 if jsonData['event'] == 'create-tile':
                     asyncio.create_task(handle_create_tile(jsonData, websocket, id))
@@ -145,7 +125,6 @@ async def websocket_endpoint(websocket: WebSocket, id: str):
                 }
                 await users[key].socket.send_text(json.dumps(disconnectingUserEvent))
 
-print('past ws')
 
 async def handle_create_tile(jsonData, websocket, id):
     await broadcast_new_tile(jsonData, id)
