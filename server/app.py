@@ -228,7 +228,7 @@ async def get_image_id(image_as_base64, websocket):
         try:
             print('calling stability api to send image')
             async with httpx.AsyncClient() as client:
-                url = "https://api.stability.ai/v2alpha/generation/image-to-video"
+                url = "https://api.stability.ai/v2beta/image-to-video"
                 headers = {
                     'authorization': f"Bearer {STABILITY_API_KEY}",
                     'accept': 'application/json'
@@ -289,7 +289,7 @@ async def handle_emit(jsonData):
             await users[key].socket.send_text(json.dumps(newUserEvent))
 
 async def create_video(id):
-    url = "https://api.stability.ai/v2alpha/generation/image-to-video/result/" + id
+    url = "https://api.stability.ai/v2beta/image-to-video/result/" + id
     headers = {
         'authorization': f"Bearer {STABILITY_API_KEY}",
         'accept': 'application/json'
