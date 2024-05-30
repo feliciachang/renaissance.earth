@@ -1,0 +1,54 @@
+name: 'Publish to Jamsocket'
+description: 'Build and publish a Docker image to Jamsocket registry'
+inputs:
+  JAMSOCKET_API_TOKEN:
+    description: 'Token for Jamsocket authentication'
+    required: true
+  IMAGE_NAME:
+    description: 'Name of the Docker image (ACCOUNT_NAME/SERVICE_NAME)'
+    required: true
+  DOCKER_BUILD_CONTEXT:
+    description: 'Path to the Docker build context'
+    required: true
+    default: '.'
+  DOCKERFILE_PATH:
+    description: 'Path to the Dockerfile'
+    required: true
+    default: './Dockerfile'
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set JAMCR_USER from token
+      run: echo "JAMCR_USER=${{ inputs.JAMSOCKET_API_TOKEN%\.* }}" >> $GITHUB_ENV
+
+    - name: Set JAMCR_PASS from token
+      run: echo "JAMCR_PASS=${{ inputs.JAMSOCKET_API_TOKEN#*\. }}" >> $GITHUB_ENV
+
+    - name: Log into registry ${{ env.REGISTRY }}
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@v1
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ env.JAMCR_USER }}
+        password: ${{ env.JAMCR_PASS }}
+
+    - name: Extract Docker metadata
+      id: meta
+      uses: docker/metadata-action@v3
+      with:
+        images: ${{ env.REGISTRY }}/${{ inputs.IMAGE_NAME }}
+        tags: |
+          type=sha,enable=true,priority=100,prefix=sha-,suffix=,format=short
+          type=raw,value=latest
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v3
+      with:
+        context: ${{ inputs.DOCKER_BUILD_CONTEXT }}
+        file: ${{ inputs.DOCKERFILE_PATH }}
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}

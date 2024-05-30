@@ -1,0 +1,24 @@
+name: Test Publish to Jamsocket Action
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  REGISTRY: new.jamcr.io
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Use the local Publish to Jamsocket Action
+        uses: ./.github/actions/publish-to-jamsocket
+        with:
+          JAMSOCKET_API_TOKEN: ${{ secrets.JAMSOCKET_API_TOKEN }}
+          IMAGE_NAME: testaccount/testservice
+          DOCKER_BUILD_CONTEXT: .
+          DOCKERFILE_PATH: ./Dockerfile
