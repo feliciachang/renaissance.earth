@@ -4,9 +4,6 @@ on:
   push:
     branches: [ "main" ]
 
-env:
-  REGISTRY: new.jamcr.io
-
 jobs:
   build:
     runs-on: ubuntu-latest
