@@ -34,3 +34,35 @@ runs:
       run: |
         JAMSOCKET_API_TOKEN=${{ inputs.JAMSOCKET_API_TOKEN }}
         echo "JAMCR_USER=${JAMSOCKET_API_TOKEN%\.*}" >> $GITHUB_ENV
+
+    - name: Set JAMCR_PASS from token
+      shell: bash
+      run: |
+        JAMSOCKET_API_TOKEN=${{ inputs.JAMSOCKET_API_TOKEN }}
+        echo "JAMCR_PASS=${JAMSOCKET_API_TOKEN#*\.}" >> $GITHUB_ENV
+
+    - name: Log into registry ${{ env.REGISTRY }}
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ env.JAMCR_USER }}
+        password: ${{ env.JAMCR_PASS }}
+
+    - name: Extract Docker metadata
+      id: meta
+      uses: docker/metadata-action@v3
+      with:
+        images: ${{ env.REGISTRY }}/${{ inputs.IMAGE_NAME }}
+        tags: |
+          type=sha,enable=true,priority=100,prefix=sha-,suffix=,format=short
+          type=raw,value=latest
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v3
+      with:
+        context: ${{ inputs.DOCKER_BUILD_CONTEXT }}
+        file: ${{ inputs.DOCKERFILE_PATH }}
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
