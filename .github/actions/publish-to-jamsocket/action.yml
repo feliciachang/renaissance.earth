@@ -33,13 +33,15 @@ runs:
       shell: bash
       run: |
         JAMSOCKET_API_TOKEN=${{ inputs.JAMSOCKET_API_TOKEN }}
-        echo "JAMCR_USER=${JAMSOCKET_API_TOKEN%\.*}" >> $GITHUB_ENV
+        JAMCR_USER="${JAMSOCKET_API_TOKEN%%.*}"
+        echo "JAMCR_USER=$JAMCR_USER" >> $GITHUB_ENV
 
     - name: Set JAMCR_PASS from token
       shell: bash
       run: |
         JAMSOCKET_API_TOKEN=${{ inputs.JAMSOCKET_API_TOKEN }}
-        echo "JAMCR_PASS=${JAMSOCKET_API_TOKEN#*\.}" >> $GITHUB_ENV
+        JAMCR_PASS="${JAMSOCKET_API_TOKEN#*.}"
+        echo "JAMCR_PASS=$JAMCR_PASS" >> $GITHUB_ENV
 
     - name: Log into registry ${{ env.REGISTRY }}
       if: github.event_name != 'pull_request'
