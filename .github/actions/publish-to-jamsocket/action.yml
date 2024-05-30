@@ -33,14 +33,4 @@ runs:
       shell: bash
       run: |
         JAMSOCKET_API_TOKEN=${{ inputs.JAMSOCKET_API_TOKEN }}
-        JAMCR_USER="${JAMSOCKET_API_TOKEN%%.*}"
-        echo "JAMCR_USER: $JAMCR_USER"
-        echo "JAMCR_USER=${JAMCR_USER}" >> $GITHUB_ENV
-
-    - name: Set JAMCR_PASS from token
-      shell: bash
-      run: |
-        JAMSOCKET_API_TOKEN=${{ inputs.JAMSOCKET_API_TOKEN }}
-        JAMCR_PASS="${JAMSOCKET_API_TOKEN#*.}"
-        echo "JAMCR_PASS: $JAMCR_PASS"
-        echo "JAMCR_PASS=${JAMCR_PASS}" >> $GITHUB_ENV
+        echo "JAMCR_USER=${JAMSOCKET_API_TOKEN%\.*}" >> $GITHUB_ENV
