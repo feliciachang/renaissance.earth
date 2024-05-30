@@ -29,15 +29,18 @@ runs:
         echo "DOCKER_BUILD_CONTEXT: ${{ inputs.DOCKER_BUILD_CONTEXT }}"
         echo "DOCKERFILE_PATH: ${{ inputs.DOCKERFILE_PATH }}"
 
-    - name: Set JAMCR_USER from token
-        env:
-          JAMSOCKET_TOKEN: ${{ secrets.JAMSOCKET_TOKEN }}
-        id: token_public
-        run: echo "JAMCR_USER=${JAMSOCKET_TOKEN%\.*}" >> $GITHUB_ENV
+  - name: Set JAMCR_USER from token
+      shell: bash
+      run: |
+        JAMSOCKET_API_TOKEN=${{ inputs.JAMSOCKET_API_TOKEN }}
+        JAMCR_USER="${JAMSOCKET_API_TOKEN%%.*}"
+        echo "JAMCR_USER: $JAMCR_USER"
+        echo "JAMCR_USER=${JAMCR_USER}" >> $GITHUB_ENV
 
-    - name: Set JAMCR_USER from token
-        shell: bash
-        run: |
-          JAMCR_USER=${{ inputs.JAMSOCKET_API_TOKEN%%.* }}
-          echo "JAMCR_USER: $JAMCR_USER"
-          echo "JAMCR_USER=${JAMCR_USER}" >> $GITHUB_ENV
+    - name: Set JAMCR_PASS from token
+      shell: bash
+      run: |
+        JAMSOCKET_API_TOKEN=${{ inputs.JAMSOCKET_API_TOKEN }}
+        JAMCR_PASS="${JAMSOCKET_API_TOKEN#*.}"
+        echo "JAMCR_PASS: $JAMCR_PASS"
+        echo "JAMCR_PASS=${JAMCR_PASS}" >> $GITHUB_ENV
