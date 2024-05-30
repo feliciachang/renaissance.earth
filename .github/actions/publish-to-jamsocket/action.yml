@@ -55,7 +55,6 @@ runs:
       with:
         images: ${{ env.REGISTRY }}/${{ inputs.IMAGE_NAME }}
         tags: |
-          type=sha,enable=true,priority=100,prefix=sha-,suffix=,format=short
           type=raw,value=latest
 
     - name: Build and push Docker image
