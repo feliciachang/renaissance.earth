@@ -12,8 +12,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Use the local Publish to Jamsocket Action
-        uses: ./.github/actions/publish-to-jamsocket
+      - name: Deploy to Jamsocket
+        uses: jamsocket/jamsocket-deploy-action@v0.1.0
         with:
           jamsocket_api_token: ${{ secrets.JAMSOCKET_API_TOKEN }}
           jamsocket_account: ffeliciachang
