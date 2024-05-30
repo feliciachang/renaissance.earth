@@ -4,8 +4,11 @@ inputs:
   jamsocket_api_token:
     description: 'API Token for Jamsocket authentication'
     required: true
-  image_name:
-    description: 'Name of the Docker image structured like so: JAMSOCKET_ACCOUNT_NAME/JAMSOCKET_SERVICE_NAME'
+  jamsocket_account:
+    description: 'Name of your Jamsocket account'
+    required: true
+  jamsocket_service:
+    description: 'Name of your Jamsocket service'
     required: true
   docker_build_context:
     description: 'Path to the Docker build context'
@@ -45,7 +48,7 @@ runs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ inputs.image_name }}
+        images: ${{ env.REGISTRY }}/${{ inputs.jamsocket_account }}/${{ inputs.jamsocket_service }}
         tags: |
           type=raw,value=latest
 
