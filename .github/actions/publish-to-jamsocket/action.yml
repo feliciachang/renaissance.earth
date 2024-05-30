@@ -22,10 +22,12 @@ runs:
       uses: actions/checkout@v3
 
     - name: Set JAMCR_USER from token
-      run: echo "JAMCR_USER=${{ inputs.JAMSOCKET_API_TOKEN%\.* }}" >> $GITHUB_ENV
+      shell: bash
+      run: echo "JAMCR_USER=${{ inputs.JAMSOCKET_API_TOKEN%%.* }}" >> $GITHUB_ENV
 
     - name: Set JAMCR_PASS from token
-      run: echo "JAMCR_PASS=${{ inputs.JAMSOCKET_API_TOKEN#*\. }}" >> $GITHUB_ENV
+      shell: bash
+      run: echo "JAMCR_PASS=${{ inputs.JAMSOCKET_API_TOKEN#*. }}" >> $GITHUB_ENV
 
     - name: Log into registry ${{ env.REGISTRY }}
       if: github.event_name != 'pull_request'
