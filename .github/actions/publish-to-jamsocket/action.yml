@@ -1,5 +1,5 @@
-name: 'Publish to Jamsocket'
-description: 'Build and publish a Docker image to Jamsocket registry'
+name: 'Deploy to Jamsocket'
+description: 'This action will handle the deploying session backend code to your Jamsocket service.'
 inputs:
   JAMSOCKET_API_TOKEN:
     description: 'Token for Jamsocket authentication'
