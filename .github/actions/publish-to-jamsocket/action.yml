@@ -30,7 +30,7 @@ runs:
         echo "DOCKERFILE_PATH: ${{ inputs.DOCKERFILE_PATH }}"
 
     - name: Set JAMCR_USER from token
-        shell: bash
-        run: |
-          JAMSOCKET_API_TOKEN=${{ inputs.JAMSOCKET_API_TOKEN }}
-          echo "JAMCR_USER=${JAMSOCKET_API_TOKEN%\.*}" >> $GITHUB_ENV
+      shell: bash
+      run: |
+        JAMSOCKET_API_TOKEN=${{ inputs.JAMSOCKET_API_TOKEN }}
+        echo "JAMCR_USER=${JAMSOCKET_API_TOKEN%\.*}" >> $GITHUB_ENV
