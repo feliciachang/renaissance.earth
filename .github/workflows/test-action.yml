@@ -20,5 +20,5 @@ jobs:
         with:
           JAMSOCKET_API_TOKEN: ${{ secrets.JAMSOCKET_API_TOKEN }}
           IMAGE_NAME: ffeliciachang/renaissance-earth
-          DOCKER_BUILD_CONTEXT: .
-          DOCKERFILE_PATH: ./Dockerfile
+          DOCKER_BUILD_CONTEXT: ./server
+          DOCKERFILE_PATH: ./server/Dockerfile.jamsocket
