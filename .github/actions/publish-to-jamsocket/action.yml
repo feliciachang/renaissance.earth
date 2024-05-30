@@ -19,7 +19,7 @@ runs:
   using: 'composite'
   steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Debug Inputs
       shell: bash
@@ -45,7 +45,7 @@ runs:
 
     - name: Log into registry ${{ env.REGISTRY }}
       if: github.event_name != 'pull_request'
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3
       with:
         registry: ${{ env.REGISTRY }}
         username: ${{ env.JAMCR_USER }}
@@ -53,14 +53,14 @@ runs:
 
     - name: Extract Docker metadata
       id: meta
-      uses: docker/metadata-action@v4
+      uses: docker/metadata-action@v5
       with:
         images: ${{ env.REGISTRY }}/${{ inputs.IMAGE_NAME }}
         tags: |
           type=raw,value=latest
 
     - name: Build and push Docker image
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v5
       with:
         context: ${{ inputs.DOCKER_BUILD_CONTEXT }}
         file: ${{ inputs.DOCKERFILE_PATH }}
