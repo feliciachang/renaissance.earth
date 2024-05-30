@@ -1,45 +1,35 @@
 name: 'Deploy to Jamsocket'
 description: 'This action will handle the deploying session backend code to your Jamsocket service.'
 inputs:
-  JAMSOCKET_API_TOKEN:
-    description: 'Token for Jamsocket authentication'
+  jamsocket_api_token:
+    description: 'API Token for Jamsocket authentication'
     required: true
-  IMAGE_NAME:
-    description: 'Name of the Docker image (ACCOUNT_NAME/SERVICE_NAME)'
+  image_name:
+    description: 'Name of the Docker image structured like so: JAMSOCKET_ACCOUNT_NAME/JAMSOCKET_SERVICE_NAME'
     required: true
-  DOCKER_BUILD_CONTEXT:
+  docker_build_context:
     description: 'Path to the Docker build context'
     required: true
-    default: '.'
-  DOCKERFILE_PATH:
+  dockerfile_path:
     description: 'Path to the Dockerfile'
     required: true
-    default: './Dockerfile'
 runs:
   using: 'composite'
   steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Debug Inputs
-      shell: bash
-      run: |
-        echo "JAMSOCKET_API_TOKEN: ${{ inputs.JAMSOCKET_API_TOKEN }}"
-        echo "IMAGE_NAME: ${{ inputs.IMAGE_NAME }}"
-        echo "DOCKER_BUILD_CONTEXT: ${{ inputs.DOCKER_BUILD_CONTEXT }}"
-        echo "DOCKERFILE_PATH: ${{ inputs.DOCKERFILE_PATH }}"
-
     - name: Set JAMCR_USER from token
       shell: bash
       run: |
-        JAMSOCKET_API_TOKEN=${{ inputs.JAMSOCKET_API_TOKEN }}
+        JAMSOCKET_API_TOKEN=${{ inputs.jamsocket_api_token }}
         JAMCR_USER="${JAMSOCKET_API_TOKEN%%.*}"
         echo "JAMCR_USER=$JAMCR_USER" >> $GITHUB_ENV
 
     - name: Set JAMCR_PASS from token
       shell: bash
       run: |
-        JAMSOCKET_API_TOKEN=${{ inputs.JAMSOCKET_API_TOKEN }}
+        JAMSOCKET_API_TOKEN=${{ inputs.jamsocket_api_token }}
         JAMCR_PASS="${JAMSOCKET_API_TOKEN#*.}"
         echo "JAMCR_PASS=$JAMCR_PASS" >> $GITHUB_ENV
 
@@ -55,15 +45,15 @@ runs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ inputs.IMAGE_NAME }}
+        images: ${{ env.REGISTRY }}/${{ inputs.image_name }}
         tags: |
           type=raw,value=latest
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
-        context: ${{ inputs.DOCKER_BUILD_CONTEXT }}
-        file: ${{ inputs.DOCKERFILE_PATH }}
+        context: ${{ inputs.docker_build_context }}
+        file: ${{ inputs.dockerfile_path }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
