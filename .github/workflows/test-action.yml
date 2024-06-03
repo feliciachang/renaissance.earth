@@ -15,7 +15,7 @@ jobs:
       - name: Get commit metadata
         id: commit_info
         run: |
-          echo "Commit Hash: ${{ github.event.pull_request.head.sha }}"
+          echo "Commit Hash: ${{ github.sha }}"
           echo "Commit Message: ${{ github.event.head_commit.message }}"
           echo "BRANCH_NAME: ${{ github.ref_name }}"
           echo "Respository: ${{ github.repository }}"
