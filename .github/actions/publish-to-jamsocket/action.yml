@@ -55,6 +55,11 @@ runs:
         images: new.jamcr.io/${{ inputs.jamsocket_account }}/${{ inputs.jamsocket_service }}
         tags: |
           type=raw,value=${{ inputs.docker_tag }}
+        labels: |
+          type=raw,value=hash=${{ github.sha }}
+          type=raw,value=message=${{ github.event.head_commit.message }}
+          type=raw,value=branch=${{ github.ref_name }}
+          type=raw,value=repository=${{ github.repository }}
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
