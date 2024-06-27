@@ -55,9 +55,6 @@ runs:
         images: new.jamcr.io/${{ inputs.jamsocket_account }}/${{ inputs.jamsocket_service }}
         tags: |
           type=raw,value=${{ inputs.docker_tag }}
-        labels: |
-          type=raw,value=jamsocket_account=${{ inputs.jamsocket_account }}
-          type=raw,value=jamsocket_service=${{ inputs.jamsocket_service }}
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
@@ -66,7 +63,6 @@ runs:
         file: ${{ inputs.dockerfile_path }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
 
 branding:
   icon: 'check-circle'
