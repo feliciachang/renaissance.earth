@@ -22,7 +22,6 @@ jobs:
           IMAGE_NAME: testaccount/testservice
           DOCKER_BUILD_CONTEXT: ./server
           DOCKERFILE_PATH: ./server/Dockerfile.jamsocket
-          DOCKER_TAG: mycustomtag
 
 # name: Test Publish to Jamsocket Action
 
