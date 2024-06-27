@@ -23,6 +23,7 @@ jobs:
           jamsocket_service: renaissance-earth
           docker_build_context: ./server
           dockerfile_path: ./server/Dockerfile.jamsocket
+          docker_tag: mycustomtag
 
 # name: Test Publish to Jamsocket Action
 
