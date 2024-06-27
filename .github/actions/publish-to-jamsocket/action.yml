@@ -62,8 +62,7 @@ runs:
         context: ${{ inputs.docker_build_context }}
         file: ${{ inputs.dockerfile_path }}
         push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
+        tags: new.jamcr.io/${{ inputs.jamsocket_account }}/${{ inputs.jamsocket_service }}:${{ inputs.docker_tag || 'latest' }}
 
 branding:
   icon: 'check-circle'
