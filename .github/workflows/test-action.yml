@@ -4,18 +4,44 @@ on:
   push:
     branches: [ "main" ]
 
+env:
+  REGISTRY: new.jamcr.io
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Get commit metadata
-        id: commit_info
-        run: |
-          echo "Commit Hash: ${{ github.sha }}"
-          echo "Commit Message: ${{ github.event.head_commit.message }}"
-          echo "BRANCH_NAME: ${{ github.ref_name }}"
-          echo "Respository: ${{ github.repository }}"
+      - name: Use the local Publish to Jamsocket Action
+        uses: ./.github/actions/publish-to-jamsocket
+        with:
+          JAMSOCKET_API_TOKEN: ${{ secrets.JAMSOCKET_API_TOKEN }}
+          IMAGE_NAME: testaccount/testservice
+          DOCKER_BUILD_CONTEXT: ./server
+          DOCKERFILE_PATH: ./server/Dockerfile.jamsocket
+          DOCKER_TAG: mycustomtag
+
+# name: Test Publish to Jamsocket Action
+
+# on:
+#   push:
+#     branches: [ "main" ]
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       - name: Get commit metadata
+#         id: commit_info
+#         run: |
+#           echo "Commit Hash: ${{ github.sha }}"
+#           echo "Commit Message: ${{ github.event.head_commit.message }}"
+#           echo "BRANCH_NAME: ${{ github.ref_name }}"
+#           echo "Respository: ${{ github.repository }}"
