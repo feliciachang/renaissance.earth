@@ -16,10 +16,6 @@ inputs:
   dockerfile_path:
     description: 'Path to your Dockerfile'
     required: true
-  docker_tag:
-    description: 'Custom tag for your Docker image'
-    required: false
-    default: 'latest'
 runs:
   using: 'composite'
   steps:
@@ -54,7 +50,7 @@ runs:
       with:
         images: new.jamcr.io/${{ inputs.jamsocket_account }}/${{ inputs.jamsocket_service }}
         tags: |
-          type=raw,value=${{ inputs.docker_tag }}
+          type=raw,value=latest
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
