@@ -56,10 +56,10 @@ runs:
         tags: |
           type=raw,value=${{ inputs.docker_tag }}
         labels: |
-          type=raw,value=hash=${{ github.sha }}
-          type=raw,value=message=${{ github.event.head_commit.message }}
-          type=raw,value=branch=${{ github.ref_name }}
-          type=raw,value=repository=${{ github.repository }}
+          type=raw,key=hash,value=${{ github.sha }}
+          type=raw,key=message,value=${{ github.event.head_commit.message }}
+          type=raw,key=branch,value=${{ github.ref_name }}
+          type=raw,key=repository,value=${{ github.repository }}
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
