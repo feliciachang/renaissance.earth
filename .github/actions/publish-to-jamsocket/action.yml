@@ -48,21 +48,21 @@ runs:
         username: ${{ env.JAMCR_USER }}
         password: ${{ env.JAMCR_PASS }}
 
-    - name: Extract Docker metadata
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: new.jamcr.io/${{ inputs.jamsocket_account }}/${{ inputs.jamsocket_service }}
-        tags: |
-          type=raw,value=${{ inputs.docker_tag }}
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: new.jamcr.io/${{ inputs.jamsocket_account }}/${{ inputs.jamsocket_service }}
+          tags: |
+            type=raw,value=${{ inputs.docker_tag || 'latest' }}
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: ${{ inputs.docker_build_context }}
-        file: ${{ inputs.dockerfile_path }}
-        push: true
-        tags: new.jamcr.io/${{ inputs.jamsocket_account }}/${{ inputs.jamsocket_service }}:${{ inputs.docker_tag || 'latest' }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ${{ inputs.docker_build_context }}
+          file: ${{ inputs.dockerfile_path }}
+          push: true
+          tags: new.jamcr.io/${{ inputs.jamsocket_account }}/${{ inputs.jamsocket_service }}:${{ inputs.docker_tag || 'latest' }}
 
 branding:
   icon: 'check-circle'
