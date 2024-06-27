@@ -56,10 +56,8 @@ runs:
         tags: |
           type=raw,value=${{ inputs.docker_tag }}
         labels: |
-          type=raw,key=hash,value=${{ github.sha }}
-          type=raw,key=message,value=${{ github.event.head_commit.message }}
-          type=raw,key=branch,value=${{ github.ref_name }}
-          type=raw,key=repository,value=${{ github.repository }}
+          type=raw,value=jamsocket_account=${{ inputs.jamsocket_account }}
+          type=raw,value=jamsocket_service=${{ inputs.jamsocket_service }}
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
