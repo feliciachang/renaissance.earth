@@ -57,6 +57,9 @@ runs:
           type=raw,value=${{ inputs.docker_tag }}
         labels: |
           hash=${{ github.sha }}
+          message=${{ github.event.head_commit.message }}
+          branch=${{ github.ref_name }}
+          repository=${{ github.repository }}
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
