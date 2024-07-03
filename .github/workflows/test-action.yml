@@ -18,7 +18,7 @@ jobs:
       - name: Use the local Publish to Jamsocket Action
         uses: ./.github/actions/publish-to-jamsocket
         with:
-          jamsocket_api_token: ${{ secrets.JAMSOCKET_API_TOKEN }}
+          jamsocket_api_token: ${{ secrets.JAMSOCKET_DEV_TOKEN }}
           jamsocket_account: ffeliciachang
           jamsocket_service: renaissance-earth
           docker_build_context: ./server
