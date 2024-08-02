@@ -1,29 +1,22 @@
-name: Test Publish to Jamsocket Action
-
+name: Deploy to Jamsocket
 on:
   push:
     branches: [ "main" ]
-
-env:
-  REGISTRY: new.jamcr.io
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Deploy to Jamsocket
         uses: jamsocket/jamsocket-deploy-action@v0.1.3
         with:
-          jamsocket_api_token: ${{ secrets.JAMSOCKET_DEV_TOKEN }}
+          jamsocket_api_token: ${{ secrets.JAMSOCKET_API_TOKEN }}
           jamsocket_account: felicia
           jamsocket_service: renaissance
           docker_build_context: ./server
           dockerfile_path: ./server/Dockerfile.jamsocket
-          tag: mycustomtag
 
 # name: Test Publish to Jamsocket Action
 
