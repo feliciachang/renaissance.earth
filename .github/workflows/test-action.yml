@@ -17,6 +17,7 @@ jobs:
           jamsocket_service: renaissance
           docker_build_context: ./server
           dockerfile_path: ./server/Dockerfile.jamsocket
+          tag: newtag
 
 # name: Test Publish to Jamsocket Action
 
