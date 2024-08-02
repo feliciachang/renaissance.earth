@@ -27,7 +27,7 @@ export default async function Page() {
   const spawnResult = await jamsocket.spawn({
     // Clients use a unique lock to access the same session backend.
     // Since we only have one public room, we can use the same lock for all clients.
-    lock: "renaissance-earth",
+    lock: "my-lock-123",
     // Pass env vars to the session backend
     env: {
       STABILITY_API_KEY: STABILITY_API_KEY,
