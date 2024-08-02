@@ -87,7 +87,7 @@ buffer = BytesIO()
 bosch_image_sm.save(buffer, format="jpeg")
 bosch_sm_base64 = base64.b64encode(buffer.getvalue()).decode()
 
-print('got image')
+print('got image ==')
 
 @app.websocket("/ws/{id}")
 async def websocket_endpoint(websocket: WebSocket, id: str):
