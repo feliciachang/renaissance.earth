@@ -19,7 +19,7 @@ jobs:
         uses: ./.github/actions/publish-to-jamsocket
         with:
           jamsocket_api_token: ${{ secrets.JAMSOCKET_DEV_TOKEN }}
-          jamsocket_account: jamsocket
+          jamsocket_account: felicia
           jamsocket_service: renaissance
           docker_build_context: ./server
           dockerfile_path: ./server/Dockerfile.jamsocket
