@@ -1,75 +1,75 @@
-# name: 'Deploy to Jamsocket'
-# description: 'This action will handle deploying session backend code to your Jamsocket service.'
-# inputs:
-#   jamsocket_api_token:
-#     description: 'API Token for Jamsocket authentication'
-#     required: true
-#   jamsocket_account:
-#     description: 'Name of your Jamsocket account'
-#     required: true
-#   jamsocket_service:
-#     description: 'Name of your Jamsocket service'
-#     required: true
-#   docker_build_context:
-#     description: 'Path to your Docker build context'
-#     required: true
-#   dockerfile_path:
-#     description: 'Path to your Dockerfile'
-#     required: true
-#   docker_tag:
-#     description: 'Custom tag for your Docker image'
-#     required: false
-#     default: 'latest'
-# runs:
-#   using: 'composite'
-#   steps:
-#     - name: Checkout repository
-#       uses: actions/checkout@v4
+name: 'Deploy to Jamsocket'
+description: 'This action will handle deploying session backend code to your Jamsocket service.'
+inputs:
+  jamsocket_api_token:
+    description: 'API Token for Jamsocket authentication'
+    required: true
+  jamsocket_account:
+    description: 'Name of your Jamsocket account'
+    required: true
+  jamsocket_service:
+    description: 'Name of your Jamsocket service'
+    required: true
+  docker_build_context:
+    description: 'Path to your Docker build context'
+    required: true
+  dockerfile_path:
+    description: 'Path to your Dockerfile'
+    required: true
+  docker_tag:
+    description: 'Custom tag for your Docker image'
+    required: false
+    default: 'latest'
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-#     - name: Set JAMCR_USER from token
-#       shell: bash
-#       run: |
-#         JAMSOCKET_API_TOKEN=${{ inputs.jamsocket_api_token }}
-#         JAMCR_USER="${JAMSOCKET_API_TOKEN%%.*}"
-#         echo "JAMCR_USER=$JAMCR_USER" >> $GITHUB_ENV
+    - name: Set JAMCR_USER from token
+      shell: bash
+      run: |
+        JAMSOCKET_API_TOKEN=${{ inputs.jamsocket_api_token }}
+        JAMCR_USER="${JAMSOCKET_API_TOKEN%%.*}"
+        echo "JAMCR_USER=$JAMCR_USER" >> $GITHUB_ENV
 
-#     - name: Set JAMCR_PASS from token
-#       shell: bash
-#       run: |
-#         JAMSOCKET_API_TOKEN=${{ inputs.jamsocket_api_token }}
-#         JAMCR_PASS="${JAMSOCKET_API_TOKEN#*.}"
-#         echo "JAMCR_PASS=$JAMCR_PASS" >> $GITHUB_ENV
+    - name: Set JAMCR_PASS from token
+      shell: bash
+      run: |
+        JAMSOCKET_API_TOKEN=${{ inputs.jamsocket_api_token }}
+        JAMCR_PASS="${JAMSOCKET_API_TOKEN#*.}"
+        echo "JAMCR_PASS=$JAMCR_PASS" >> $GITHUB_ENV
 
-#     - name: Log into Jamsocket's Docker registry
-#       if: github.event_name != 'pull_request'
-#       uses: docker/login-action@v3
-#       with:
-#         registry: jamcr.xyz
-#         username: ${{ env.JAMCR_USER }}
-#         password: ${{ env.JAMCR_PASS }}
+    - name: Log into Jamsocket's Docker registry
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@v3
+      with:
+        registry: jamcr.xyz
+        username: ${{ env.JAMCR_USER }}
+        password: ${{ env.JAMCR_PASS }}
 
-#     - name: Extract Docker metadata
-#       id: meta
-#       uses: docker/metadata-action@v5
-#       with:
-#         images: jamcr.xyz/${{ inputs.jamsocket_account }}/${{ inputs.jamsocket_service }}
-#         tags: |
-#           type=raw,value=${{ inputs.docker_tag }}
-#         labels: |
-#           hash=${{ github.sha }}
-#           message=${{ github.event.head_commit.message }}
-#           branch=${{ github.ref_name }}
-#           repository=${{ github.repository }}
+    - name: Extract Docker metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: jamcr.xyz/${{ inputs.jamsocket_account }}/${{ inputs.jamsocket_service }}
+        tags: |
+          type=raw,value=${{ inputs.docker_tag }}
+        labels: |
+          hash=${{ github.sha }}
+          message=${{ github.event.head_commit.message }}
+          branch=${{ github.ref_name }}
+          repository=${{ github.repository }}
 
-#     - name: Build and push Docker image
-#       uses: docker/build-push-action@v5
-#       with:
-#         context: ${{ inputs.docker_build_context }}
-#         file: ${{ inputs.dockerfile_path }}
-#         push: true
-#         tags: ${{ steps.meta.outputs.tags }}
-#         labels: ${{ steps.meta.outputs.labels }}
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ${{ inputs.docker_build_context }}
+        file: ${{ inputs.dockerfile_path }}
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
 
-# branding:
-#   icon: 'check-circle'
-#   color: 'blue'
+branding:
+  icon: 'check-circle'
+  color: 'blue'
