@@ -13,7 +13,7 @@ jobs:
         uses: jamsocket/jamsocket-deploy-action@v0.1.3
         with:
           jamsocket_api_token: ${{ secrets.JAMSOCKET_API_TOKEN }}
-          jamsocket_account: felicia
+          jamsocket_account: jamsocket
           jamsocket_service: renaissance
           docker_build_context: ./server
           dockerfile_path: ./server/Dockerfile.jamsocket
