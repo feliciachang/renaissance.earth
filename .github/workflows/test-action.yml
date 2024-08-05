@@ -10,7 +10,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to Jamsocket
-        uses: actions/publish-to-jamsocket
+        uses: ./.github/actions/publish-to-jamsocket
         with:
           jamsocket_api_token: ${{ secrets.JAMSOCKET_API_TOKEN }}
           jamsocket_account: felicia
